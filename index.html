@@ -179,11 +179,17 @@
     const downloadMovementButton = document.getElementById('downloadMovementButton');
     const notification = document.getElementById('notification');
 
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
+    // Iniciar la cámara
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    .then(function(stream) {
       video.srcObject = stream;
       video.setAttribute("playsinline", true);
       video.play();
       requestAnimationFrame(tick);
+    })
+    .catch(function(err) {
+      console.error("Error al acceder a la cámara: ", err);
+      alert("No se pudo acceder a la cámara. Asegúrate de que los permisos estén activados.");
     });
 
     function tick() {
@@ -403,4 +409,9 @@
       scanButton.style.display = "none"; 
       downloadButton.style.display = "none"; 
       bankMovementButton.style.display = "none";
-      downloadMovementButton
+      downloadMovementButton.classList.add('hidden'); 
+      requestAnimationFrame(tick);
+    });
+  </script>
+</body>
+</html>
