@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Administrador de Sobres</title>
+  <title>Movimientos Bancarios</title>
   
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
   
@@ -42,49 +42,17 @@
     button:hover {
       background-color: #357abd;
     }
-    #video {
-      width: 100%;
-      height: auto;
+    .form-section {
       margin-bottom: 20px;
-    }
-    .tabla-datos {
-      width: 100%;
-      margin-top: 20px;
-      border-collapse: collapse;
-    }
-    .tabla-datos th, .tabla-datos td {
-      padding: 10px;
+      padding: 15px;
+      background-color: #fff;
       border: 1px solid #ddd;
-      text-align: left;
-    }
-    .tabla-datos th {
-      background-color: #4a90e2;
-      color: #fff;
     }
     .total {
       text-align: right;
       font-size: 22px;
       font-weight: bold;
       margin-top: 20px;
-    }
-    .denominaciones {
-      margin-top: 20px;
-      font-size: 18px;
-      font-weight: bold;
-    }
-    #scanButton, #downloadButton, #bankMovementButton, #downloadMovementButton {
-      display: inline-block;
-      margin: 10px;
-    }
-    #bankMovementForm {
-      display: none;
-      margin-top: 20px;
-      border: 1px solid #ddd;
-      padding: 15px;
-      background-color: #fff;
-    }
-    .hidden {
-      display: none;
     }
     .notification {
       color: green;
@@ -95,322 +63,168 @@
   </style>
 </head>
 <body>
-  <h1>Escanear Códigos QR - Administrador</h1>
+  <h1>Movimientos Bancarios</h1>
 
-  <video id="video" autoplay></video>
-  <canvas id="canvas" style="display:none;"></canvas>
-  <canvas id="canvasDownload" style="display:none;"></canvas> 
-
-  <button id="scanButton">Escanear otro código</button>
-  <button id="downloadButton">Guardar Datos</button>
-  <button id="bankMovementButton">Movimiento Bancario</button>
-  <button id="downloadMovementButton" class="hidden">Descargar Movimientos</button> 
-  
-  <div id="notification" class="notification">Depósito guardado correctamente</div> 
-
-  <form id="bankMovementForm">
-    <label for="bankOption">Entidad Bancaria:</label>
-    <select id="bankOption" name="bankOption" required>
-      <option value="RADIO MOVIL DIPSA">RADIO MOVIL DIPSA</option>
-      <option value="GRUPO EN TELECOMUNICACIONES">GRUPO EN TELECOMUNICACIONES</option>
-    </select><br>
-    <label for="depositAmount1">Cantidad 1:</label>
-    <input type="number" id="depositAmount1" name="depositAmount1" required><br>
-    <label for="depositAmount2">Cantidad 2 (opcional):</label>
-    <input type="number" id="depositAmount2" name="depositAmount2"><br>
-    <label for="depositAmount3">Cantidad 3 (opcional):</label>
-    <input type="number" id="depositAmount3" name="depositAmount3"><br>
-    <label for="depositAmount4">Cantidad 4 (opcional):</label>
-    <input type="number" id="depositAmount4" name="depositAmount4"><br>
-    <label for="depositAmount5">Cantidad 5 (opcional):</label>
-    <input type="number" id="depositAmount5" name="depositAmount5"><br>
-    <button type="button" id="calculateDepositButton">Guardar movimiento</button>
-  </form>
-
-  <table class="tabla-datos" id="tablaResultados" style="display: none;">
-    <thead>
-      <tr>
-        <th>Sucursal</th>
-        <th>Fecha</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody id="tbodyResultados"></tbody>
-  </table>
-
-  <p class="total" id="totalAcumulado">Total Acumulado: $0</p>
-
-  <div class="denominaciones">
-    <p id="denominacionesTotal">Total por Denominaciones:</p>
-    <p>$1000: <span id="total1000">0</span></p>
-    <p>$500: <span id="total500">0</span></p>
-    <p>$200: <span id="total200">0</span></p>
-    <p>$100: <span id="total100">0</span></p>
-    <p>$50: <span id="total50">0</span></p>
-    <p>$20: <span id="total20">0</span></p>
-    <p>Monedas: <span id="totalMonedas">0</span></p>
+  <div class="form-section">
+    <h2>Radio Móvil Dipsa</h2>
+    <label for="radioAmount1">Cantidad 1:</label>
+    <input type="number" id="radioAmount1" name="radioAmount1"><br>
+    <label for="radioAmount2">Cantidad 2:</label>
+    <input type="number" id="radioAmount2" name="radioAmount2"><br>
+    <label for="radioAmount3">Cantidad 3:</label>
+    <input type="number" id="radioAmount3" name="radioAmount3"><br>
+    <label for="radioAmount4">Cantidad 4:</label>
+    <input type="number" id="radioAmount4" name="radioAmount4"><br>
+    <label for="radioAmount5">Cantidad 5:</label>
+    <input type="number" id="radioAmount5" name="radioAmount5"><br>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+  <div class="form-section">
+    <h2>Grupo en Telecomunicaciones</h2>
+    <label for="grupoAmount1">Cantidad 1:</label>
+    <input type="number" id="grupoAmount1" name="grupoAmount1"><br>
+    <label for="grupoAmount2">Cantidad 2:</label>
+    <input type="number" id="grupoAmount2" name="grupoAmount2"><br>
+    <label for="grupoAmount3">Cantidad 3:</label>
+    <input type="number" id="grupoAmount3" name="grupoAmount3"><br>
+    <label for="grupoAmount4">Cantidad 4:</label>
+    <input type="number" id="grupoAmount4" name="grupoAmount4"><br>
+    <label for="grupoAmount5">Cantidad 5:</label>
+    <input type="number" id="grupoAmount5" name="grupoAmount5"><br>
+  </div>
+
+  <button id="generateButton">Generar Movimiento</button>
+  <button id="downloadButton" style="display:none;">Descargar Movimientos</button>
+
+  <div id="notification" class="notification">Movimiento guardado correctamente</div>
+
   <script>
-    let totalGeneral = 0;
-    let totalBilletes = {
-      mil: 0,
-      quinientos: 0,
-      doscientos: 0,
-      cien: 0,
-      cincuenta: 0,
-      veinte: 0,
-      monedas: 0
-    };
-    let escaneoActivo = true;
-    const resultadosTabla = [];
-    const movimientos = [];
-    let granTotal = 0;  // Definir gran total fuera del loop
-
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const scanButton = document.getElementById('scanButton');
+    const generateButton = document.getElementById('generateButton');
     const downloadButton = document.getElementById('downloadButton');
-    const bankMovementButton = document.getElementById('bankMovementButton');
-    const bankMovementForm = document.getElementById('bankMovementForm');
-    const calculateDepositButton = document.getElementById('calculateDepositButton');
-    const downloadMovementButton = document.getElementById('downloadMovementButton');
     const notification = document.getElementById('notification');
+    let radioTotal = 0;
+    let grupoTotal = 0;
 
-    // Iniciar la cámara
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-    .then(function(stream) {
-      video.srcObject = stream;
-      video.setAttribute("playsinline", true);
-      video.play();
-      requestAnimationFrame(tick);
-    })
-    .catch(function(err) {
-      console.error("Error al acceder a la cámara: ", err);
-      alert("No se pudo acceder a la cámara. Asegúrate de que los permisos estén activados.");
-    });
-
-    function tick() {
-      if (video.readyState === video.HAVE_ENOUGH_DATA && escaneoActivo) {
-        canvas.height = video.videoHeight;
-        canvas.width = video.videoWidth;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
-
-        if (qrCode) {
-          procesarQR(qrCode.data);
-          escaneoActivo = false;  
-          scanButton.style.display = "block";
-          downloadButton.style.display = "block";
-          bankMovementButton.style.display = "block";
-        }
-      }
-      requestAnimationFrame(tick);
-    }
-
-    function procesarQR(qrDataText) {
-      try {
-        const qrData = JSON.parse(qrDataText);
-
-        const tbody = document.getElementById('tbodyResultados');
-        const fila = document.createElement('tr');
-
-        const sucursalCell = document.createElement('td');
-        sucursalCell.textContent = qrData.sucursal;
-
-        const fechaCell = document.createElement('td');
-        fechaCell.textContent = qrData.fecha;
-
-        const totalCell = document.createElement('td');
-        totalCell.textContent = `$${qrData.total.toLocaleString('es-MX')}`;
-
-        fila.appendChild(sucursalCell);
-        fila.appendChild(fechaCell);
-        fila.appendChild(totalCell);
-        tbody.appendChild(fila);
-
-        resultadosTabla.push({ sucursal: qrData.sucursal, fecha: qrData.fecha, total: qrData.total });
-
-        document.getElementById('tablaResultados').style.display = 'table';
-
-        totalGeneral += qrData.total;
-        document.getElementById('totalAcumulado').textContent = `Total Acumulado: $${totalGeneral.toLocaleString('es-MX')}`;
-
-        totalBilletes.mil += qrData.billetes.mil;
-        totalBilletes.quinientos += qrData.billetes.quinientos;
-        totalBilletes.doscientos += qrData.billetes.doscientos;
-        totalBilletes.cien += qrData.billetes.cien;
-        totalBilletes.cincuenta += qrData.billetes.cincuenta;
-        totalBilletes.veinte += qrData.billetes.veinte;
-        totalBilletes.monedas += qrData.billetes.monedas;
-
-        document.getElementById('total1000').textContent = totalBilletes.mil;
-        document.getElementById('total500').textContent = totalBilletes.quinientos;
-        document.getElementById('total200').textContent = totalBilletes.doscientos;
-        document.getElementById('total100').textContent = totalBilletes.cien;
-        document.getElementById('total50').textContent = totalBilletes.cincuenta;
-        document.getElementById('total20').textContent = totalBilletes.veinte;
-        document.getElementById('totalMonedas').textContent = totalBilletes.monedas;
-
-      } catch (error) {
-        alert('No se pudo procesar el código QR.');
-      }
-    }
-
-    bankMovementButton.addEventListener('click', function() {
-      bankMovementForm.style.display = 'block';
-    });
-
-    calculateDepositButton.addEventListener('click', function() {
-      const bankOption = document.getElementById('bankOption').value;
-      const depositAmounts = [
-        parseInt(document.getElementById('depositAmount1').value),
-        parseInt(document.getElementById('depositAmount2').value) || 0,
-        parseInt(document.getElementById('depositAmount3').value) || 0,
-        parseInt(document.getElementById('depositAmount4').value) || 0,
-        parseInt(document.getElementById('depositAmount5').value) || 0
+    generateButton.addEventListener('click', function() {
+      const radioAmounts = [
+        parseInt(document.getElementById('radioAmount1').value) || 0,
+        parseInt(document.getElementById('radioAmount2').value) || 0,
+        parseInt(document.getElementById('radioAmount3').value) || 0,
+        parseInt(document.getElementById('radioAmount4').value) || 0,
+        parseInt(document.getElementById('radioAmount5').value) || 0
       ];
 
-      const depositTotal = depositAmounts.reduce((a, b) => a + b, 0);
+      const grupoAmounts = [
+        parseInt(document.getElementById('grupoAmount1').value) || 0,
+        parseInt(document.getElementById('grupoAmount2').value) || 0,
+        parseInt(document.getElementById('grupoAmount3').value) || 0,
+        parseInt(document.getElementById('grupoAmount4').value) || 0,
+        parseInt(document.getElementById('grupoAmount5').value) || 0
+      ];
 
-      if (depositTotal > totalGeneral) {
-        alert('La cantidad a depositar es mayor al total acumulado.');
-        return;
-      }
-
-      let cantidadRestante = depositTotal;
-      let billetesDepositados = { mil: 0, quinientos: 0, doscientos: 0, cien: 0, cincuenta: 0, veinte: 0, monedas: 0 };
-
-      if (cantidadRestante > 0 && totalBilletes.mil > 0) {
-        billetesDepositados.mil = Math.min(Math.floor(cantidadRestante / 1000), totalBilletes.mil);
-        cantidadRestante -= billetesDepositados.mil * 1000;
-        totalBilletes.mil -= billetesDepositados.mil;
-      }
-      if (cantidadRestante > 0 && totalBilletes.quinientos > 0) {
-        billetesDepositados.quinientos = Math.min(Math.floor(cantidadRestante / 500), totalBilletes.quinientos);
-        cantidadRestante -= billetesDepositados.quinientos * 500;
-        totalBilletes.quinientos -= billetesDepositados.quinientos;
-      }
-      if (cantidadRestante > 0 && totalBilletes.doscientos > 0) {
-        billetesDepositados.doscientos = Math.min(Math.floor(cantidadRestante / 200), totalBilletes.doscientos);
-        cantidadRestante -= billetesDepositados.doscientos * 200;
-        totalBilletes.doscientos -= billetesDepositados.doscientos;
-      }
-      if (cantidadRestante > 0 && totalBilletes.cien > 0) {
-        billetesDepositados.cien = Math.min(Math.floor(cantidadRestante / 100), totalBilletes.cien);
-        cantidadRestante -= billetesDepositados.cien * 100;
-        totalBilletes.cien -= billetesDepositados.cien;
-      }
-      if (cantidadRestante > 0 && totalBilletes.cincuenta > 0) {
-        billetesDepositados.cincuenta = Math.min(Math.floor(cantidadRestante / 50), totalBilletes.cincuenta);
-        cantidadRestante -= billetesDepositados.cincuenta * 50;
-        totalBilletes.cincuenta -= billetesDepositados.cincuenta;
-      }
-      if (cantidadRestante > 0 && totalBilletes.veinte > 0) {
-        billetesDepositados.veinte = Math.min(Math.floor(cantidadRestante / 20), totalBilletes.veinte);
-        cantidadRestante -= billetesDepositados.veinte * 20;
-        totalBilletes.veinte -= billetesDepositados.veinte;
-      }
-      if (cantidadRestante > 0 && totalBilletes.monedas > 0) {
-        billetesDepositados.monedas = Math.min(cantidadRestante, totalBilletes.monedas);
-        cantidadRestante -= billetesDepositados.monedas;
-        totalBilletes.monedas -= billetesDepositados.monedas;
-      }
-
-      movimientos.push({
-        entidad: bankOption,
-        cantidades: depositAmounts,
-        total: depositTotal,
-        billetes: billetesDepositados
-      });
-
-      granTotal += depositTotal;
+      // Sumar las cantidades ingresadas para cada opción
+      radioTotal = radioAmounts.reduce((a, b) => a + b, 0);
+      grupoTotal = grupoAmounts.reduce((a, b) => a + b, 0);
 
       notification.style.display = 'block'; 
       setTimeout(() => { notification.style.display = 'none'; }, 3000);
 
-      // Vaciar campos después de guardar
-      document.getElementById('depositAmount1').value = '';
-      document.getElementById('depositAmount2').value = '';
-      document.getElementById('depositAmount3').value = '';
-      document.getElementById('depositAmount4').value = '';
-      document.getElementById('depositAmount5').value = '';
-
-      downloadMovementButton.classList.remove('hidden');
+      downloadButton.style.display = 'block'; 
     });
 
-    downloadMovementButton.addEventListener('click', function() {
-      const canvasDownload = document.getElementById('canvasDownload');
-      const ctxDownload = canvasDownload.getContext('2d');
+    downloadButton.addEventListener('click', function() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
 
       const scale = 3;
       const width = 800;
-      const height = 1000 + movimientos.length * 120;
-      canvasDownload.width = width * scale;
-      canvasDownload.height = height * scale;
-      ctxDownload.scale(scale, scale);
+      const height = 400; 
+      canvas.width = width * scale;
+      canvas.height = height * scale;
+      ctx.scale(scale, scale);
 
-      ctxDownload.fillStyle = '#f4f6f8';
-      ctxDownload.fillRect(0, 0, canvasDownload.width, canvasDownload.height);
+      // Fondo blanco
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctxDownload.fillStyle = '#4a90e2';
-      ctxDownload.font = 'bold 28px Poppins';
-      ctxDownload.fillText('Movimientos', 50, 60);
+      // Título y fecha
+      ctx.fillStyle = '#4a90e2';
+      ctx.font = 'bold 28px Poppins';
+      ctx.fillText('Movimientos', 50, 60);
 
       const fechaActual = new Date();
       const dia = String(fechaActual.getDate()).padStart(2, '0');
       const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
       const anio = fechaActual.getFullYear();
-      ctxDownload.font = 'bold 20px Poppins';
-      ctxDownload.fillText(`${dia}-${mes}-${anio}`, 50, 120);
+      ctx.font = 'bold 20px Poppins';
+      ctx.fillText(`${dia}-${mes}-${anio}`, 50, 120);
 
       let startY = 170;
 
-      movimientos.forEach((movimiento, index) => {
-        ctxDownload.fillStyle = '#000';
-        ctxDownload.font = 'bold 20px Poppins';
-        ctxDownload.fillText(`${movimiento.entidad}`, 50, startY);
+      // Mostrar Radio Móvil Dipsa si tiene cantidades
+      if (radioTotal > 0) {
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 20px Poppins';
+        ctx.fillText('Radio Móvil Dipsa', 50, startY);
 
-        ctxDownload.font = '16px Poppins';
-        movimiento.cantidades.forEach((cantidad, i) => {
-          if (cantidad > 0) {
-            ctxDownload.fillText(`$${cantidad.toLocaleString('es-MX')}`, 70, startY + (i + 1) * 25);
+        ctx.font = '16px Poppins';
+        const radioAmounts = [
+          document.getElementById('radioAmount1').value || 0,
+          document.getElementById('radioAmount2').value || 0,
+          document.getElementById('radioAmount3').value || 0,
+          document.getElementById('radioAmount4').value || 0,
+          document.getElementById('radioAmount5').value || 0
+        ];
+
+        radioAmounts.forEach((amount, i) => {
+          if (amount > 0) {
+            ctx.fillText(`$${parseInt(amount).toLocaleString('es-MX')}`, 70, startY + (i + 1) * 25);
           }
         });
 
         startY += 150; 
+        ctx.font = 'bold 16px Poppins';
+        ctx.fillText(`Total a Radio Móvil Dipsa: $${radioTotal.toLocaleString('es-MX')}`, 50, startY);
+        startY += 50;
+      }
 
-        ctxDownload.font = '16px Poppins';
-        ctxDownload.fillText(`$1000: ${movimiento.billetes.mil}`, 70, startY + 10);
-        ctxDownload.fillText(`$500: ${movimiento.billetes.quinientos}`, 70, startY + 40);
-        ctxDownload.fillText(`$200: ${movimiento.billetes.doscientos}`, 70, startY + 70);
-        ctxDownload.fillText(`$100: ${movimiento.billetes.cien}`, 70, startY + 100);
-        ctxDownload.fillText(`$50: ${movimiento.billetes.cincuenta}`, 70, startY + 130);
-        ctxDownload.fillText(`$20: ${movimiento.billetes.veinte}`, 70, startY + 160);
-        ctxDownload.fillText(`Monedas: ${movimiento.billetes.monedas}`, 70, startY + 190);
+      // Mostrar Grupo en Telecomunicaciones si tiene cantidades
+      if (grupoTotal > 0) {
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 20px Poppins';
+        ctx.fillText('Grupo en Telecomunicaciones', 50, startY);
 
-        startY += 220;
-      });
+        ctx.font = '16px Poppins';
+        const grupoAmounts = [
+          document.getElementById('grupoAmount1').value || 0,
+          document.getElementById('grupoAmount2').value || 0,
+          document.getElementById('grupoAmount3').value || 0,
+          document.getElementById('grupoAmount4').value || 0,
+          document.getElementById('grupoAmount5').value || 0
+        ];
 
-      ctxDownload.font = 'bold 24px Poppins';
-      ctxDownload.fillText(`Gran Total: $${granTotal.toLocaleString('es-MX')}`, 50, startY + 30);
+        grupoAmounts.forEach((amount, i) => {
+          if (amount > 0) {
+            ctx.fillText(`$${parseInt(amount).toLocaleString('es-MX')}`, 70, startY + (i + 1) * 25);
+          }
+        });
 
+        startY += 150; 
+        ctx.font = 'bold 16px Poppins';
+        ctx.fillText(`Total a Grupo en Telecomunicaciones: $${grupoTotal.toLocaleString('es-MX')}`, 50, startY);
+        startY += 50;
+      }
+
+      // Gran Total
+      const granTotal = radioTotal + grupoTotal;
+      ctx.font = 'bold 24px Poppins';
+      ctx.fillText(`Gran Total: $${granTotal.toLocaleString('es-MX')}`, 50, startY + 50);
+
+      // Descargar la imagen
       const link = document.createElement('a');
       link.download = `MOVIMIENTOS - ${dia}-${mes}-${anio}.png`;
-      link.href = canvasDownload.toDataURL();
+      link.href = canvas.toDataURL();
       link.click();
-    });
-
-    scanButton.addEventListener('click', function() {
-      escaneoActivo = true;  
-      scanButton.style.display = "none"; 
-      downloadButton.style.display = "none"; 
-      bankMovementButton.style.display = "none";
-      downloadMovementButton.classList.add('hidden'); 
-      requestAnimationFrame(tick);
     });
   </script>
 </body>
