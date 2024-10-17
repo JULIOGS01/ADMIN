@@ -166,6 +166,7 @@
     let escaneoActivo = true;
     const resultadosTabla = [];
     const movimientos = [];
+    let granTotal = 0;  // Definir gran total fuera del loop
 
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
@@ -320,6 +321,8 @@
         billetes: billetesDepositados
       });
 
+      granTotal += depositTotal;
+
       notification.style.display = 'block'; 
       setTimeout(() => { notification.style.display = 'none'; }, 3000);
 
@@ -359,11 +362,8 @@
       ctxDownload.fillText(`${dia}-${mes}-${anio}`, 50, 120);
 
       let startY = 170;
-      let granTotal = 0;
 
       movimientos.forEach((movimiento, index) => {
-        const totalPorCuenta = movimiento.total;
-
         ctxDownload.fillStyle = '#000';
         ctxDownload.font = 'bold 20px Poppins';
         ctxDownload.fillText(`${movimiento.entidad}`, 50, startY);
@@ -375,9 +375,7 @@
           }
         });
 
-        granTotal += totalPorCuenta;
-
-        startY += 200; 
+        startY += 150; 
 
         ctxDownload.font = '16px Poppins';
         ctxDownload.fillText(`$1000: ${movimiento.billetes.mil}`, 70, startY + 10);
@@ -401,13 +399,8 @@
     });
 
     scanButton.addEventListener('click', function() {
-      escaneoActivo
-    scanButton.style.display = "none"; 
+      escaneoActivo = true;  
+      scanButton.style.display = "none"; 
       downloadButton.style.display = "none"; 
       bankMovementButton.style.display = "none";
-      downloadMovementButton.classList.add('hidden'); 
-      requestAnimationFrame(tick);
-    });
-  </script>
-</body>
-</html>
+      downloadMovementButton
