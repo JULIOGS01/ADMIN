@@ -153,7 +153,7 @@
     <p>$200: <span id="total200">0</span></p>
     <p>$100: <span id="total100">0</span></p>
     <p>$50: <span id="total50">0</span></p>
-    <p>$20: <span id="total20">0</span></p>
+    <p>$20: <span id="total20">0"></span></p>
     <p>Monedas: <span id="totalMonedas">0</span></p>
   </div>
 
@@ -397,8 +397,9 @@
         startY += 40;
       }
 
+      // Tabulador y Gran Total a la derecha
       ctx.font = 'bold 24px Poppins';
-      ctx.fillText(`Gran Total: $${granTotal.toLocaleString('es-MX')}`, 500, startY + 20); // Colocado a la derecha
+      ctx.fillText(`Gran Total: $${granTotal.toLocaleString('es-MX')}`, 500, startY + 20); 
 
       const link = document.createElement('a');
       link.download = `MOVIMIENTOS - ${dia}-${mes}-${anio}.png`;
