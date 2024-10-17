@@ -87,6 +87,12 @@
     .hidden {
       display: none;
     }
+    .notification {
+      color: green;
+      font-size: 16px;
+      margin-top: 10px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -100,6 +106,8 @@
   <button id="downloadButton">Guardar Datos</button>
   <button id="bankMovementButton">Movimiento Bancario</button>
   <button id="downloadMovementButton" class="hidden">Descargar Movimientos</button> <!-- Botón para guardar movimientos -->
+  
+  <div id="notification" class="notification">Depósito guardado correctamente</div> <!-- Notificación -->
 
   <form id="bankMovementForm">
     <label for="bankOption">Entidad Bancaria:</label>
@@ -107,8 +115,16 @@
       <option value="RADIO MOVIL DIPSA">RADIO MOVIL DIPSA</option>
       <option value="GRUPO EN TELECOMUNICACIONES">GRUPO EN TELECOMUNICACIONES</option>
     </select><br>
-    <label for="depositAmount">Cantidad a depositar:</label>
-    <input type="number" id="depositAmount" name="depositAmount" required><br>
+    <label for="depositAmount1">Cantidad 1:</label>
+    <input type="number" id="depositAmount1" name="depositAmount1" required><br>
+    <label for="depositAmount2">Cantidad 2 (opcional):</label>
+    <input type="number" id="depositAmount2" name="depositAmount2"><br>
+    <label for="depositAmount3">Cantidad 3 (opcional):</label>
+    <input type="number" id="depositAmount3" name="depositAmount3"><br>
+    <label for="depositAmount4">Cantidad 4 (opcional):</label>
+    <input type="number" id="depositAmount4" name="depositAmount4"><br>
+    <label for="depositAmount5">Cantidad 5 (opcional):</label>
+    <input type="number" id="depositAmount5" name="depositAmount5"><br>
     <button type="button" id="calculateDepositButton">Calcular depósito</button>
   </form>
 
@@ -161,6 +177,7 @@
     const bankMovementForm = document.getElementById('bankMovementForm');
     const calculateDepositButton = document.getElementById('calculateDepositButton');
     const downloadMovementButton = document.getElementById('downloadMovementButton');
+    const notification = document.getElementById('notification');
 
     // Iniciar la cámara
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
@@ -251,16 +268,23 @@
 
     // Calcular el depósito
     calculateDepositButton.addEventListener('click', function() {
-      const depositAmount = parseInt(document.getElementById('depositAmount').value);
       const bankOption = document.getElementById('bankOption').value;
+      const depositAmounts = [
+        parseInt(document.getElementById('depositAmount1').value),
+        parseInt(document.getElementById('depositAmount2').value) || 0,
+        parseInt(document.getElementById('depositAmount3').value) || 0,
+        parseInt(document.getElementById('depositAmount4').value) || 0,
+        parseInt(document.getElementById('depositAmount5').value) || 0
+      ];
 
-      if (depositAmount > totalGeneral) {
+      const depositTotal = depositAmounts.reduce((a, b) => a + b, 0);
+
+      if (depositTotal > totalGeneral) {
         alert('La cantidad a depositar es mayor al total acumulado.');
         return;
       }
 
-      // Calcular la cantidad de billetes a restar
-      let cantidadRestante = depositAmount;
+      let cantidadRestante = depositTotal;
       let billetesDepositados = { mil: 0, quinientos: 0, doscientos: 0, cien: 0, cincuenta: 0, veinte: 0, monedas: 0 };
 
       if (cantidadRestante > 0 && totalBilletes.mil > 0) {
@@ -301,12 +325,14 @@
 
       movimientos.push({
         entidad: bankOption,
-        cantidad: depositAmount,
+        cantidades: depositAmounts,
+        total: depositTotal,
         billetes: billetesDepositados
       });
 
-      alert(`Depósito calculado: \nEntidad: ${bankOption}\nCantidad: $${depositAmount}\nBilletes usados:\n$1000: ${billetesDepositados.mil}\n$500: ${billetesDepositados.quinientos}\n$200: ${billetesDepositados.doscientos}\n$100: ${billetesDepositados.cien}\n$50: ${billetesDepositados.cincuenta}\n$20: ${billetesDepositados.veinte}\nMonedas: ${billetesDepositados.monedas}`);
-      
+      notification.style.display = 'block'; // Mostrar notificación
+      setTimeout(() => { notification.style.display = 'none'; }, 3000); // Ocultar después de 3 segundos
+
       downloadMovementButton.classList.remove('hidden');
     });
 
@@ -318,46 +344,68 @@
       // Configurar el tamaño del canvas para la imagen
       const scale = 3; // Incrementar aún más la resolución
       const width = 800;
-      const height = 1000 + movimientos.length * 100; // Ajustar altura en función de la cantidad de depósitos
+      const height = 1000 + movimientos.length * 120; // Ajustar altura en función de la cantidad de depósitos
       canvasDownload.width = width * scale;
       canvasDownload.height = height * scale;
       ctxDownload.scale(scale, scale);
 
-      // Fondo blanco
-      ctxDownload.fillStyle = '#fff';
+      // Fondo con color
+      ctxDownload.fillStyle = '#f4f6f8';
       ctxDownload.fillRect(0, 0, canvasDownload.width, canvasDownload.height);
 
-      // Título
-      ctxDownload.fillStyle = '#000';
-      ctxDownload.font = 'bold 24px Poppins';
-      ctxDownload.fillText('Resumen de Movimientos Bancarios', 200, 40);
+      // Título en negritas
+      ctxDownload.fillStyle = '#4a90e2';
+      ctxDownload.font = 'bold 28px Poppins';
+      ctxDownload.fillText('Movimientos', 50, 60); // Cambiar título
 
-      // Añadir la fecha en negritas
+      // Añadir la fecha
       const fechaActual = new Date();
       const dia = String(fechaActual.getDate()).padStart(2, '0');
       const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
       const anio = fechaActual.getFullYear();
-      ctxDownload.font = 'bold 18px Poppins';
-      ctxDownload.fillText(`Fecha: ${dia}-${mes}-${anio}`, 50, 100);
+      ctxDownload.font = 'bold 20px Poppins';
+      ctxDownload.fillText(`${dia}-${mes}-${anio}`, 50, 120);
 
-      // Mostrar los movimientos
-      let startY = 150;
+      // Mostrar los movimientos con sus cantidades y billetes
+      let startY = 170;
+      let granTotal = 0;
       movimientos.forEach((movimiento, index) => {
-        ctxDownload.fillStyle = '#000';
-        ctxDownload.font = '16px Poppins';
-        ctxDownload.fillText(`Depósito a: ${movimiento.entidad}`, 50, startY);
-        ctxDownload.fillText(`Cantidad: $${movimiento.cantidad.toLocaleString('es-MX')}`, 50, startY + 30);
-        ctxDownload.fillText(`Billetes usados:`, 50, startY + 60);
-        ctxDownload.fillText(`$1000: ${movimiento.billetes.mil}`, 50, startY + 90);
-        ctxDownload.fillText(`$500: ${movimiento.billetes.quinientos}`, 50, startY + 120);
-        ctxDownload.fillText(`$200: ${movimiento.billetes.doscientos}`, 50, startY + 150);
-        ctxDownload.fillText(`$100: ${movimiento.billetes.cien}`, 50, startY + 180);
-        ctxDownload.fillText(`$50: ${movimiento.billetes.cincuenta}`, 50, startY + 210);
-        ctxDownload.fillText(`$20: ${movimiento.billetes.veinte}`, 50, startY + 240);
-        ctxDownload.fillText(`Monedas: ${movimiento.billetes.monedas}`, 50, startY + 270);
+        const totalPorCuenta = movimiento.total;
 
-        startY += 300;
+        ctxDownload.fillStyle = '#000';
+        ctxDownload.font = 'bold 20px Poppins';
+        ctxDownload.fillText(`${movimiento.entidad}`, 50, startY);
+
+        ctxDownload.font = '16px Poppins';
+        movimiento.cantidades.forEach((cantidad, i) => {
+          if (cantidad > 0) {
+            ctxDownload.fillText(`$${cantidad.toLocaleString('es-MX')}`, 70, startY + (i + 1) * 25);
+          }
+        });
+
+        ctxDownload.fillText(`Total: $${totalPorCuenta.toLocaleString('es-MX')}`, 70, startY + 150);
+
+        granTotal += totalPorCuenta;
+
+        startY += 200; // Espacio para el siguiente movimiento
+
+        // Billetes usados
+        ctxDownload.font = '16px Poppins';
+        ctxDownload.fillText(`$1000: ${movimiento.billetes.mil}`, 70, startY + 10);
+        ctxDownload.fillText(`$500: ${movimiento.billetes.quinientos}`, 70, startY + 40);
+        ctxDownload.fillText(`$200: ${movimiento.billetes.doscientos}`, 70, startY + 70);
+        ctxDownload.fillText(`$100: ${movimiento.billetes.cien}`, 70, startY + 100);
+        ctxDownload.fillText(`$50: ${movimiento.billetes.cincuenta}`, 70, startY + 130);
+        ctxDownload.fillText(`$20: ${movimiento.billetes.veinte}`, 70, startY + 160);
+        ctxDownload.fillText(`Monedas: ${movimiento.billetes.monedas}`, 70, startY + 190);
+
+        startY += 220; // Espacio para el siguiente depósito
       });
+
+      if (movimientos.length > 1) {
+        ctxDownload.font = 'bold 24px Poppins';
+        ctxDownload.fillText(`Gran Total: $${granTotal.toLocaleString('es-MX')}`, 50, startY + 30);
+      }
 
       // Descargar la imagen con el nombre en formato "MOVIMIENTOS - DD-MM-YYYY"
       const link = document.createElement('a');
