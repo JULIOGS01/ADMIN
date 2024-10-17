@@ -68,8 +68,41 @@
       font-size: 18px;
       font-weight: bold;
     }
-    #scanButton, #downloadButton {
+    #scanButton, #downloadButton, #guardarMovimientoBtn {
       display: none;
+    }
+    .movimiento-bancario {
+      margin-top: 40px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      background-color: #fff;
+      border-radius: 8px;
+    }
+    .movimiento-bancario label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    .movimiento-bancario input[type="number"] {
+      width: calc(100% - 20px);
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .guardar-movimiento {
+      background-color: #28a745;
+      color: #fff;
+      font-weight: 600;
+    }
+    .guardar-movimiento:hover {
+      background-color: #218838;
+    }
+    .btn-movimiento-bancario {
+      background-color: #ff9800;
+      color: #fff;
+    }
+    .btn-movimiento-bancario:hover {
+      background-color: #e68900;
     }
   </style>
 </head>
@@ -82,6 +115,26 @@
 
   <button id="scanButton">Escanear otro código</button>
   <button id="downloadButton">Guardar Datos</button>
+  <button class="btn-movimiento-bancario" id="movimientoBancarioBtn">Movimiento Bancario</button>
+
+  <div id="movimientoBancario" class="movimiento-bancario" style="display:none;">
+    <label>Grupo en Telecomunicaciones:</label>
+    <input type="number" id="grupo1" placeholder="Cantidad 1">
+    <input type="number" id="grupo2" placeholder="Cantidad 2">
+    <input type="number" id="grupo3" placeholder="Cantidad 3">
+    <input type="number" id="grupo4" placeholder="Cantidad 4">
+    <input type="number" id="grupo5" placeholder="Cantidad 5">
+
+    <label>Radio Móvil Dipsa:</label>
+    <input type="number" id="radio1" placeholder="Cantidad 1">
+    <input type="number" id="radio2" placeholder="Cantidad 2">
+    <input type="number" id="radio3" placeholder="Cantidad 3">
+    <input type="number" id="radio4" placeholder="Cantidad 4">
+    <input type="number" id="radio5" placeholder="Cantidad 5">
+
+    <button class="guardar-movimiento" id="guardarMovimientoBtn">Guardar</button>
+    <button id="guardarMovimientos">Guardar Movimientos</button>
+  </div>
 
   <table class="tabla-datos" id="tablaResultados" style="display: none;">
     <thead>
@@ -127,6 +180,10 @@
     const ctx = canvas.getContext('2d');
     const scanButton = document.getElementById('scanButton');
     const downloadButton = document.getElementById('downloadButton');
+    const movimientoBancarioBtn = document.getElementById('movimientoBancarioBtn');
+    const movimientoBancarioDiv = document.getElementById('movimientoBancario');
+    const guardarMovimientoBtn = document.getElementById('guardarMovimientoBtn');
+    const guardarMovimientosBtn = document.getElementById('guardarMovimientos');
 
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
       video.srcObject = stream;
@@ -209,7 +266,17 @@
       requestAnimationFrame(tick);
     });
 
-    downloadButton.addEventListener('click', function() {
+    movimientoBancarioBtn.addEventListener('click', function() {
+      movimientoBancarioDiv.style.display = movimientoBancarioDiv.style.display === 'none' ? 'block' : 'none';
+    });
+
+    guardarMovimientoBtn.addEventListener('click', function() {
+      alert('Datos guardados con éxito');
+      const inputs = movimientoBancarioDiv.querySelectorAll('input[type="number"]');
+      inputs.forEach(input => input.value = '');
+    });
+
+    guardarMovimientosBtn.addEventListener('click', function() {
       const canvasDownload = document.getElementById('canvasDownload');
       const ctxDownload = canvasDownload.getContext('2d');
 
@@ -225,52 +292,50 @@
 
       ctxDownload.fillStyle = '#000';
       ctxDownload.font = 'bold 24px Poppins';
-      ctxDownload.fillText('Tabulador Total', 250, 40);
+      ctxDownload.fillText('Movimientos', 250, 40);
 
-      ctxDownload.font = 'bold 36px Poppins';
-      ctxDownload.fillText(`Total Acumulado: $${totalGeneral.toLocaleString('es-MX')}`, 50, 100);
-
+      ctxDownload.font = 'bold 18px Poppins';
       const fechaActual = new Date();
       const dia = String(fechaActual.getDate()).padStart(2, '0');
       const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
       const anio = fechaActual.getFullYear();
-      ctxDownload.font = 'bold 18px Poppins';
-      ctxDownload.fillText(`Fecha: ${dia}-${mes}-${anio}`, 50, 150);
+      ctxDownload.fillText(`Fecha: ${dia}-${mes}-${anio}`, 50, 80);
 
-      ctxDownload.font = '16px Poppins';
-      ctxDownload.fillText(`$1000: ${totalBilletes.mil}`, 50, 180);
-      ctxDownload.fillText(`$500: ${totalBilletes.quinientos}`, 50, 220);
-      ctxDownload.fillText(`$200: ${totalBilletes.doscientos}`, 50, 260);
-      ctxDownload.fillText(`$100: ${totalBilletes.cien}`, 50, 300);
-      ctxDownload.fillText(`$50: ${totalBilletes.cincuenta}`, 50, 340);
-      ctxDownload.fillText(`$20: ${totalBilletes.veinte}`, 50, 380);
-      ctxDownload.fillText(`Monedas: ${totalBilletes.monedas}`, 50, 420);
+      let startY = 120;
+      let granTotal = 0;
 
-      ctxDownload.fillStyle = '#4a90e2';
-      ctxDownload.fillRect(40, 450, 720, 30);
+      function procesarDepositos(titulo, ids) {
+        let subtotal = 0;
+        ctxDownload.font = 'bold 18px Poppins';
+        ctxDownload.fillText(titulo, 50, startY);
+        startY += 30;
 
-      ctxDownload.fillStyle = '#fff';
-      ctxDownload.font = 'bold 16px Poppins';
-      ctxDownload.fillText('Sucursal', 130, 470);
-      ctxDownload.fillText('Fecha', 340, 470);
-      ctxDownload.fillText('Total', 590, 470);
+        ids.forEach(id => {
+          const value = parseFloat(document.getElementById(id).value) || 0;
+          if (value > 0) {
+            ctxDownload.font = '16px Poppins';
+            ctxDownload.fillText(`$${value.toLocaleString('es-MX')}`, 50, startY);
+            startY += 30;
+            subtotal += value;
+          }
+        });
 
-      ctxDownload.font = '14px Poppins';
+        if (subtotal > 0) {
+          ctxDownload.font = 'bold 18px Poppins';
+          ctxDownload.fillText(`Total: $${subtotal.toLocaleString('es-MX')}`, 50, startY);
+          startY += 40;
+          granTotal += subtotal;
+        }
+      }
 
-      let startY = 510;
-      resultadosTabla.forEach((resultado, index) => {
-        ctxDownload.fillStyle = (index % 2 === 0) ? '#f0f0f0' : '#fff';
-        ctxDownload.fillRect(40, startY - 20, 720, 40);
+      procesarDepositos('GRUPO EN TELECOMUNICACIONES', ['grupo1', 'grupo2', 'grupo3', 'grupo4', 'grupo5']);
+      procesarDepositos('RADIO MÓVIL DIPSA', ['radio1', 'radio2', 'radio3', 'radio4', 'radio5']);
 
-        ctxDownload.fillStyle = '#000';
-        ctxDownload.fillText(`${resultado.sucursal}`, 130, startY);
-        ctxDownload.fillText(`${resultado.fecha}`, 340, startY);
-        ctxDownload.fillText(`$${resultado.total.toLocaleString('es-MX')}`, 590, startY);
-        startY += 40;
-      });
+      ctxDownload.font = 'bold 24px Poppins';
+      ctxDownload.fillText(`Gran Total: $${granTotal.toLocaleString('es-MX')}`, 50, startY);
 
       const link = document.createElement('a');
-      link.download = `TABULADOR - ${dia}-${mes}-${anio}.png`;
+      link.download = `MOVIMIENTOS - ${dia}-${mes}-${anio}.png`;
       link.href = canvasDownload.toDataURL();
       link.click();
     });
