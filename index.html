@@ -40,7 +40,7 @@
     }
     #video {
       width: 100%;
-      height: 250px;
+      height: 200px;
       margin-bottom: 20px;
     }
     .tabla-datos {
@@ -332,6 +332,7 @@
       procesarDepositos('RADIO MÓVIL DIPSA', ['radio1', 'radio2', 'radio3', 'radio4', 'radio5']);
 
       ctxDownload.font = 'bold 24px Poppins';
+      ctxDownload.fillStyle = '#e68900'; // Cambiar el color del gran total
       ctxDownload.fillText(`Gran Total: $${granTotal.toLocaleString('es-MX')}`, 50, startY);
 
       const link = document.createElement('a');
