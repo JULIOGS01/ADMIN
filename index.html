@@ -40,7 +40,7 @@
     }
     #video {
       width: 100%;
-      height: 150px;
+      height: 120px;
       margin-bottom: 20px;
     }
     .tabla-datos {
@@ -337,30 +337,4 @@
 
       // Añadir el tabulador de billetes usados basado en QR escaneados
       ctxDownload.fillStyle = '#000';
-      ctxDownload.font = 'bold 18px Poppins';
-      startY += 60;
-      ctxDownload.fillText('Tabulador de Billetes Usados:', 50, startY);
-      startY += 30;
-      ctxDownload.font = '16px Poppins';
-      ctxDownload.fillText(`$1000: ${totalBilletes.mil}`, 50, startY);
-      startY += 20;
-      ctxDownload.fillText(`$500: ${totalBilletes.quinientos}`, 50, startY);
-      startY += 20;
-      ctxDownload.fillText(`$200: ${totalBilletes.doscientos}`, 50, startY);
-      startY += 20;
-      ctxDownload.fillText(`$100: ${totalBilletes.cien}`, 50, startY);
-      startY += 20;
-      ctxDownload.fillText(`$50: ${totalBilletes.cincuenta}`, 50, startY);
-      startY += 20;
-      ctxDownload.fillText(`$20: ${totalBilletes.veinte}`, 50, startY);
-      startY += 20;
-      ctxDownload.fillText(`Monedas: ${totalBilletes.monedas}`, 50, startY);
-
-      const link = document.createElement('a');
-      link.download = `MOVIMIENTOS - ${dia}-${mes}-${anio}.png`;
-      link.href = canvasDownload.toDataURL();
-      link.click();
-    });
-  </script>
-</body>
-</html>
+      ctxDownload.font = 'bold 
