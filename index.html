@@ -238,4 +238,42 @@
       ctxDownload.fillText(`Fecha: ${dia}-${mes}-${anio}`, 50, 150);
 
       ctxDownload.font = '16px Poppins';
-      ctxDownload.fillText(`$1000: ${totalBilletes.mil}`, 50
+      ctxDownload.fillText(`$1000: ${totalBilletes.mil}`, 50, 180);
+      ctxDownload.fillText(`$500: ${totalBilletes.quinientos}`, 50, 220);
+      ctxDownload.fillText(`$200: ${totalBilletes.doscientos}`, 50, 260);
+      ctxDownload.fillText(`$100: ${totalBilletes.cien}`, 50, 300);
+      ctxDownload.fillText(`$50: ${totalBilletes.cincuenta}`, 50, 340);
+      ctxDownload.fillText(`$20: ${totalBilletes.veinte}`, 50, 380);
+      ctxDownload.fillText(`Monedas: ${totalBilletes.monedas}`, 50, 420);
+
+      ctxDownload.fillStyle = '#4a90e2';
+      ctxDownload.fillRect(40, 450, 720, 30);
+
+      ctxDownload.fillStyle = '#fff';
+      ctxDownload.font = 'bold 16px Poppins';
+      ctxDownload.fillText('Sucursal', 130, 470);
+      ctxDownload.fillText('Fecha', 340, 470);
+      ctxDownload.fillText('Total', 590, 470);
+
+      ctxDownload.font = '14px Poppins';
+
+      let startY = 510;
+      resultadosTabla.forEach((resultado, index) => {
+        ctxDownload.fillStyle = (index % 2 === 0) ? '#f0f0f0' : '#fff';
+        ctxDownload.fillRect(40, startY - 20, 720, 40);
+
+        ctxDownload.fillStyle = '#000';
+        ctxDownload.fillText(`${resultado.sucursal}`, 130, startY);
+        ctxDownload.fillText(`${resultado.fecha}`, 340, startY);
+        ctxDownload.fillText(`$${resultado.total.toLocaleString('es-MX')}`, 590, startY);
+        startY += 40;
+      });
+
+      const link = document.createElement('a');
+      link.download = `TABULADOR - ${dia}-${mes}-${anio}.png`;
+      link.href = canvasDownload.toDataURL();
+      link.click();
+    });
+  </script>
+</body>
+</html>
