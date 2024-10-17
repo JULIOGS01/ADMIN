@@ -353,6 +353,7 @@
 
       let startY = 170;
       let granTotal = 0;
+
       movimientos.forEach((movimiento, index) => {
         const totalPorCuenta = movimiento.total;
 
@@ -366,8 +367,6 @@
             ctxDownload.fillText(`$${cantidad.toLocaleString('es-MX')}`, 70, startY + (i + 1) * 25);
           }
         });
-
-        ctxDownload.fillText(`Total: $${totalPorCuenta.toLocaleString('es-MX')}`, 70, startY + 150);
 
         granTotal += totalPorCuenta;
 
@@ -385,10 +384,8 @@
         startY += 220;
       });
 
-      if (movimientos.length > 1) {
-        ctxDownload.font = 'bold 24px Poppins';
-        ctxDownload.fillText(`Gran Total: $${granTotal.toLocaleString('es-MX')}`, 50, startY + 30);
-      }
+      ctxDownload.font = 'bold 24px Poppins';
+      ctxDownload.fillText(`Gran Total: $${granTotal.toLocaleString('es-MX')}`, 50, startY + 30);
 
       const link = document.createElement('a');
       link.download = `MOVIMIENTOS - ${dia}-${mes}-${anio}.png`;
