@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Administrador de Sobres</title>
   
-  <!-- Agregar la fuente Poppins desde Google Fonts -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
   
   <style>
@@ -100,14 +99,14 @@
 
   <video id="video" autoplay></video>
   <canvas id="canvas" style="display:none;"></canvas>
-  <canvas id="canvasDownload" style="display:none;"></canvas> <!-- Canvas para la imagen -->
+  <canvas id="canvasDownload" style="display:none;"></canvas> 
 
   <button id="scanButton">Escanear otro código</button>
   <button id="downloadButton">Guardar Datos</button>
   <button id="bankMovementButton">Movimiento Bancario</button>
-  <button id="downloadMovementButton" class="hidden">Descargar Movimientos</button> <!-- Botón para guardar movimientos -->
+  <button id="downloadMovementButton" class="hidden">Descargar Movimientos</button> 
   
-  <div id="notification" class="notification">Depósito guardado correctamente</div> <!-- Notificación -->
+  <div id="notification" class="notification">Depósito guardado correctamente</div> 
 
   <form id="bankMovementForm">
     <label for="bankOption">Entidad Bancaria:</label>
@@ -125,7 +124,7 @@
     <input type="number" id="depositAmount4" name="depositAmount4"><br>
     <label for="depositAmount5">Cantidad 5 (opcional):</label>
     <input type="number" id="depositAmount5" name="depositAmount5"><br>
-    <button type="button" id="calculateDepositButton">Calcular depósito</button>
+    <button type="button" id="calculateDepositButton">Guardar movimiento</button>
   </form>
 
   <table class="tabla-datos" id="tablaResultados" style="display: none;">
@@ -165,8 +164,8 @@
       monedas: 0
     };
     let escaneoActivo = true;
-    const resultadosTabla = []; // Guardar los datos de la tabla
-    const movimientos = []; // Guardar los depósitos realizados
+    const resultadosTabla = [];
+    const movimientos = [];
 
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
@@ -179,10 +178,9 @@
     const downloadMovementButton = document.getElementById('downloadMovementButton');
     const notification = document.getElementById('notification');
 
-    // Iniciar la cámara
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
       video.srcObject = stream;
-      video.setAttribute("playsinline", true); // Para iOS
+      video.setAttribute("playsinline", true);
       video.play();
       requestAnimationFrame(tick);
     });
@@ -197,20 +195,19 @@
 
         if (qrCode) {
           procesarQR(qrCode.data);
-          escaneoActivo = false;  // Detener el escaneo hasta que se active de nuevo
-          scanButton.style.display = "block"; // Mostrar botón para escanear otro código
-          downloadButton.style.display = "block"; // Mostrar botón para descargar la etiqueta
-          bankMovementButton.style.display = "block"; // Mostrar botón para movimiento bancario
+          escaneoActivo = false;  
+          scanButton.style.display = "block";
+          downloadButton.style.display = "block";
+          bankMovementButton.style.display = "block";
         }
       }
-      requestAnimationFrame(tick); // Continuar escaneando incluso si no se detecta el QR
+      requestAnimationFrame(tick);
     }
 
     function procesarQR(qrDataText) {
       try {
         const qrData = JSON.parse(qrDataText);
 
-        // Añadir los datos a la tabla
         const tbody = document.getElementById('tbodyResultados');
         const fila = document.createElement('tr');
 
@@ -228,17 +225,13 @@
         fila.appendChild(totalCell);
         tbody.appendChild(fila);
 
-        // Guardar los datos en el array de resultados
         resultadosTabla.push({ sucursal: qrData.sucursal, fecha: qrData.fecha, total: qrData.total });
 
-        // Mostrar la tabla si aún no está visible
         document.getElementById('tablaResultados').style.display = 'table';
 
-        // Actualizar el total acumulado
         totalGeneral += qrData.total;
         document.getElementById('totalAcumulado').textContent = `Total Acumulado: $${totalGeneral.toLocaleString('es-MX')}`;
 
-        // Actualizar las denominaciones acumuladas
         totalBilletes.mil += qrData.billetes.mil;
         totalBilletes.quinientos += qrData.billetes.quinientos;
         totalBilletes.doscientos += qrData.billetes.doscientos;
@@ -247,7 +240,6 @@
         totalBilletes.veinte += qrData.billetes.veinte;
         totalBilletes.monedas += qrData.billetes.monedas;
 
-        // Mostrar el total acumulado de cada denominación
         document.getElementById('total1000').textContent = totalBilletes.mil;
         document.getElementById('total500').textContent = totalBilletes.quinientos;
         document.getElementById('total200').textContent = totalBilletes.doscientos;
@@ -257,16 +249,14 @@
         document.getElementById('totalMonedas').textContent = totalBilletes.monedas;
 
       } catch (error) {
-        alert('No se pudo procesar el código QR. Asegúrate de que el formato sea correcto.');
+        alert('No se pudo procesar el código QR.');
       }
     }
 
-    // Mostrar el formulario de Movimiento Bancario
     bankMovementButton.addEventListener('click', function() {
       bankMovementForm.style.display = 'block';
     });
 
-    // Calcular el depósito
     calculateDepositButton.addEventListener('click', function() {
       const bankOption = document.getElementById('bankOption').value;
       const depositAmounts = [
@@ -330,35 +320,30 @@
         billetes: billetesDepositados
       });
 
-      notification.style.display = 'block'; // Mostrar notificación
-      setTimeout(() => { notification.style.display = 'none'; }, 3000); // Ocultar después de 3 segundos
+      notification.style.display = 'block'; 
+      setTimeout(() => { notification.style.display = 'none'; }, 3000);
 
       downloadMovementButton.classList.remove('hidden');
     });
 
-    // Botón para descargar el resumen de los movimientos
     downloadMovementButton.addEventListener('click', function() {
       const canvasDownload = document.getElementById('canvasDownload');
       const ctxDownload = canvasDownload.getContext('2d');
 
-      // Configurar el tamaño del canvas para la imagen
-      const scale = 3; // Incrementar aún más la resolución
+      const scale = 3;
       const width = 800;
-      const height = 1000 + movimientos.length * 120; // Ajustar altura en función de la cantidad de depósitos
+      const height = 1000 + movimientos.length * 120;
       canvasDownload.width = width * scale;
       canvasDownload.height = height * scale;
       ctxDownload.scale(scale, scale);
 
-      // Fondo con color
       ctxDownload.fillStyle = '#f4f6f8';
       ctxDownload.fillRect(0, 0, canvasDownload.width, canvasDownload.height);
 
-      // Título en negritas
       ctxDownload.fillStyle = '#4a90e2';
       ctxDownload.font = 'bold 28px Poppins';
-      ctxDownload.fillText('Movimientos', 50, 60); // Cambiar título
+      ctxDownload.fillText('Movimientos', 50, 60);
 
-      // Añadir la fecha
       const fechaActual = new Date();
       const dia = String(fechaActual.getDate()).padStart(2, '0');
       const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
@@ -366,7 +351,6 @@
       ctxDownload.font = 'bold 20px Poppins';
       ctxDownload.fillText(`${dia}-${mes}-${anio}`, 50, 120);
 
-      // Mostrar los movimientos con sus cantidades y billetes
       let startY = 170;
       let granTotal = 0;
       movimientos.forEach((movimiento, index) => {
@@ -387,9 +371,8 @@
 
         granTotal += totalPorCuenta;
 
-        startY += 200; // Espacio para el siguiente movimiento
+        startY += 200; 
 
-        // Billetes usados
         ctxDownload.font = '16px Poppins';
         ctxDownload.fillText(`$1000: ${movimiento.billetes.mil}`, 70, startY + 10);
         ctxDownload.fillText(`$500: ${movimiento.billetes.quinientos}`, 70, startY + 40);
@@ -399,7 +382,7 @@
         ctxDownload.fillText(`$20: ${movimiento.billetes.veinte}`, 70, startY + 160);
         ctxDownload.fillText(`Monedas: ${movimiento.billetes.monedas}`, 70, startY + 190);
 
-        startY += 220; // Espacio para el siguiente depósito
+        startY += 220;
       });
 
       if (movimientos.length > 1) {
@@ -407,18 +390,16 @@
         ctxDownload.fillText(`Gran Total: $${granTotal.toLocaleString('es-MX')}`, 50, startY + 30);
       }
 
-      // Descargar la imagen con el nombre en formato "MOVIMIENTOS - DD-MM-YYYY"
       const link = document.createElement('a');
       link.download = `MOVIMIENTOS - ${dia}-${mes}-${anio}.png`;
       link.href = canvasDownload.toDataURL();
       link.click();
     });
 
-    // Botón para escanear otro código
     scanButton.addEventListener('click', function() {
-      escaneoActivo = true;  // Reactivar el escaneo
-      scanButton.style.display = "none"; // Ocultar el botón hasta el próximo escaneo
-      downloadButton.style.display = "none"; // Ocultar el botón de descarga
+      escaneoActivo = true;  
+      scanButton.style.display = "none"; 
+      downloadButton.style.display = "none"; 
       requestAnimationFrame(tick);
     });
   </script>
