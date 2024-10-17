@@ -46,6 +46,12 @@
       height: auto;
       margin-bottom: 20px;
     }
+    .form-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+    }
     .tabla-datos {
       width: 100%;
       margin-top: 20px;
@@ -70,12 +76,6 @@
       margin-top: 20px;
       font-size: 18px;
       font-weight: bold;
-    }
-    .form-section {
-      margin-bottom: 20px;
-      padding: 15px;
-      background-color: #fff;
-      border: 1px solid #ddd;
     }
     .notification {
       color: green;
@@ -102,7 +102,7 @@
   <!-- Formulario de movimientos bancarios -->
   <div id="bankMovementForm" style="display:none;">
     <div class="form-section">
-      <h2>Radio Móvil Dipsa</h2>
+      <h2>RADIO MÓVIL DIPSA</h2>
       <label for="radioAmount1">Cantidad 1:</label>
       <input type="number" id="radioAmount1" name="radioAmount1"><br>
       <label for="radioAmount2">Cantidad 2:</label>
@@ -116,7 +116,7 @@
     </div>
 
     <div class="form-section">
-      <h2>Grupo en Telecomunicaciones</h2>
+      <h2>GRUPO EN TELECOMUNICACIONES</h2>
       <label for="grupoAmount1">Cantidad 1:</label>
       <input type="number" id="grupoAmount1" name="grupoAmount1"><br>
       <label for="grupoAmount2">Cantidad 2:</label>
@@ -327,15 +327,14 @@
       const width = 800;
       let height = 400; 
 
-      // Calcular altura dinámica
-      let lines = 5; // Título y fecha
+      let lines = 5;
       if (movimientos.radio.length > 0) {
-        lines += movimientos.radio.length + 2; // Cantidades y total
+        lines += movimientos.radio.length + 2;
       }
       if (movimientos.grupo.length > 0) {
-        lines += movimientos.grupo.length + 2; // Cantidades y total
+        lines += movimientos.grupo.length + 2;
       }
-      lines += 2; // Gran Total
+      lines += 2;
 
       height = lines * 30;
 
@@ -343,11 +342,9 @@
       canvas.height = height * scale;
       ctx.scale(scale, scale);
 
-      // Fondo blanco
       ctx.fillStyle = '#fff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Título y fecha
       ctx.fillStyle = '#4a90e2';
       ctx.font = 'bold 28px Poppins';
       ctx.fillText('Movimientos', 50, 50);
@@ -362,14 +359,13 @@
       let startY = 130;
       let granTotal = 0;
 
-      // Mostrar Radio Móvil Dipsa si tiene cantidades
       if (movimientos.radio.length > 0) {
         const radioTotal = movimientos.radio.reduce((a, b) => a + b, 0);
         granTotal += radioTotal;
 
         ctx.fillStyle = '#000';
-        ctx.font = 'bold 20px Poppins';
-        ctx.fillText('Radio Móvil Dipsa', 50, startY);
+        ctx.font = 'bold 22px Poppins';
+        ctx.fillText('RADIO MÓVIL DIPSA', 50, startY);
 
         ctx.font = '16px Poppins';
         movimientos.radio.forEach((amount, i) => {
@@ -378,18 +374,17 @@
 
         startY += movimientos.radio.length * 25 + 30; 
         ctx.font = 'bold 16px Poppins';
-        ctx.fillText(`Total a Radio Móvil Dipsa: $${radioTotal.toLocaleString('es-MX')}`, 50, startY);
+        ctx.fillText(`Total: $${radioTotal.toLocaleString('es-MX')}`, 50, startY);
         startY += 40;
       }
 
-      // Mostrar Grupo en Telecomunicaciones si tiene cantidades
       if (movimientos.grupo.length > 0) {
         const grupoTotal = movimientos.grupo.reduce((a, b) => a + b, 0);
         granTotal += grupoTotal;
 
         ctx.fillStyle = '#000';
-        ctx.font = 'bold 20px Poppins';
-        ctx.fillText('Grupo en Telecomunicaciones', 50, startY);
+        ctx.font = 'bold 22px Poppins';
+        ctx.fillText('GRUPO EN TELECOMUNICACIONES', 50, startY);
 
         ctx.font = '16px Poppins';
         movimientos.grupo.forEach((amount, i) => {
@@ -398,15 +393,13 @@
 
         startY += movimientos.grupo.length * 25 + 30; 
         ctx.font = 'bold 16px Poppins';
-        ctx.fillText(`Total a Grupo en Telecomunicaciones: $${grupoTotal.toLocaleString('es-MX')}`, 50, startY);
+        ctx.fillText(`Total: $${grupoTotal.toLocaleString('es-MX')}`, 50, startY);
         startY += 40;
       }
 
-      // Gran Total
       ctx.font = 'bold 24px Poppins';
-      ctx.fillText(`Gran Total: $${granTotal.toLocaleString('es-MX')}`, 50, startY + 20);
+      ctx.fillText(`Gran Total: $${granTotal.toLocaleString('es-MX')}`, 500, startY + 20); // Colocado a la derecha
 
-      // Descargar la imagen
       const link = document.createElement('a');
       link.download = `MOVIMIENTOS - ${dia}-${mes}-${anio}.png`;
       link.href = canvas.toDataURL();
