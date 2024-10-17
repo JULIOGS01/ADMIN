@@ -323,6 +323,13 @@
       notification.style.display = 'block'; 
       setTimeout(() => { notification.style.display = 'none'; }, 3000);
 
+      // Vaciar campos después de guardar
+      document.getElementById('depositAmount1').value = '';
+      document.getElementById('depositAmount2').value = '';
+      document.getElementById('depositAmount3').value = '';
+      document.getElementById('depositAmount4').value = '';
+      document.getElementById('depositAmount5').value = '';
+
       downloadMovementButton.classList.remove('hidden');
     });
 
@@ -394,9 +401,11 @@
     });
 
     scanButton.addEventListener('click', function() {
-      escaneoActivo = true;  
-      scanButton.style.display = "none"; 
+      escaneoActivo
+    scanButton.style.display = "none"; 
       downloadButton.style.display = "none"; 
+      bankMovementButton.style.display = "none";
+      downloadMovementButton.classList.add('hidden'); 
       requestAnimationFrame(tick);
     });
   </script>
