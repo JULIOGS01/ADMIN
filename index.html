@@ -73,7 +73,7 @@
       font-size: 18px;
       font-weight: bold;
     }
-    #scanButton, #downloadButton, #saveMovementButton {
+    #scanButton, #downloadDataButton, #saveMovementButton, #downloadMovementButton {
       display: none;
     }
     #bankMovementButton {
@@ -94,9 +94,10 @@
   <canvas id="canvasDownload" style="display:none;"></canvas> <!-- Canvas para la imagen -->
 
   <button id="scanButton">Escanear otro código</button>
-  <button id="downloadButton">Guardar Datos</button>
+  <button id="downloadDataButton">Guardar Datos</button>
   <button id="bankMovementButton">Movimiento Bancario</button>
   <button id="saveMovementButton">Guardar Movimiento</button>
+  <button id="downloadMovementButton">Descargar Movimientos</button>
 
   <div id="bankMovementForm">
     <h2>Movimiento Bancario</h2>
@@ -173,9 +174,10 @@
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const scanButton = document.getElementById('scanButton');
-    const downloadButton = document.getElementById('downloadButton');
+    const downloadDataButton = document.getElementById('downloadDataButton');
     const bankMovementButton = document.getElementById('bankMovementButton');
     const saveMovementButton = document.getElementById('saveMovementButton');
+    const downloadMovementButton = document.getElementById('downloadMovementButton');
     const bankMovementForm = document.getElementById('bankMovementForm');
 
     // Iniciar la cámara
@@ -198,8 +200,10 @@
           procesarQR(qrCode.data);
           escaneoActivo = false;  // Detener el escaneo hasta que se active de nuevo
           scanButton.style.display = "block"; // Mostrar botón para escanear otro código
-          downloadButton.style.display = "block"; // Mostrar botón para descargar la etiqueta
+          downloadDataButton.style.display = "block"; // Mostrar botón para descargar la etiqueta
           bankMovementButton.style.display = "block"; // Mostrar botón para movimiento bancario
+          saveMovementButton.style.display = "block"; // Mostrar botón para guardar movimiento
+          downloadMovementButton.style.display = "block"; // Mostrar botón para descargar movimientos
         }
       }
       requestAnimationFrame(tick); // Continuar escaneando incluso si no se detecta el QR
@@ -250,57 +254,29 @@
         document.getElementById('totalMonedas').textContent = totalBilletes.monedas;
 
       } catch (error) {
-        alert('No se pudo procesar el código QR.');
+        alert('No se pudo procesar el código QR. Asegúrate de que el formato sea correcto.');
       }
     }
 
     // Botón para escanear otro código
     scanButton.addEventListener('click', function() {
-      escaneoActivo = true;
-      scanButton.style.display = "none"; 
-      downloadButton.style.display = "none"; 
-      bankMovementButton.style.display = "none";
+      escaneoActivo = true;  // Reactivar el escaneo
+      scanButton.style.display = "none"; // Ocultar el botón hasta el próximo escaneo
+      downloadDataButton.style.display = "none"; // Ocultar el botón de descarga
+      saveMovementButton.style.display = "none"; // Ocultar el botón de guardar movimiento
+      downloadMovementButton.style.display = "none"; // Ocultar el botón de descargar movimientos
       requestAnimationFrame(tick);
     });
 
-    // Botón para mostrar el formulario de movimientos bancarios
-    bankMovementButton.addEventListener('click', function() {
-      bankMovementForm.style.display = 'block';
-    });
-
-    // Botón para guardar el movimiento bancario
-    saveMovementButton.addEventListener('click', function() {
-      const radioAmounts = [
-        parseInt(document.getElementById('radioAmount1').value) || 0,
-        parseInt(document.getElementById('radioAmount2').value) || 0,
-        parseInt(document.getElementById('radioAmount3').value) || 0,
-        parseInt(document.getElementById('radioAmount4').value) || 0,
-        parseInt(document.getElementById('radioAmount5').value) || 0
-      ];
-
-      const grupoAmounts = [
-        parseInt(document.getElementById('grupoAmount1').value) || 0,
-        parseInt(document.getElementById('grupoAmount2').value) || 0,
-        parseInt(document.getElementById('grupoAmount3').value) || 0,
-        parseInt(document.getElementById('grupoAmount4').value) || 0,
-        parseInt(document.getElementById('grupoAmount5').value) || 0
-      ];
-
-      movimientos.radio = radioAmounts.filter(amount => amount > 0);
-      movimientos.grupo = grupoAmounts.filter(amount => amount > 0);
-
-      alert('Movimiento guardado correctamente.');
-    });
-
-    // Botón para descargar la imagen con los datos
-    downloadButton.addEventListener('click', function() {
+    // Botón para descargar la etiqueta como imagen
+    downloadDataButton.addEventListener('click', function() {
       const canvasDownload = document.getElementById('canvasDownload');
       const ctxDownload = canvasDownload.getContext('2d');
 
       // Configurar el tamaño del canvas para la imagen
-      const scale = 3;
+      const scale = 3; // Incrementar aún más la resolución
       const width = 800;
-      const height = 1000 + resultadosTabla.length * 40; 
+      const height = 1000 + resultadosTabla.length * 40; // Ajustar altura en función de la cantidad de filas
       canvasDownload.width = width * scale;
       canvasDownload.height = height * scale;
       ctxDownload.scale(scale, scale);
@@ -312,7 +288,7 @@
       // Título
       ctxDownload.fillStyle = '#000';
       ctxDownload.font = 'bold 24px Poppins';
-      ctxDownload.fillText('Movimientos - Resumen', 250, 40);
+      ctxDownload.fillText('Etiqueta - Resumen', 250, 40);
 
       // Texto de resumen
       ctxDownload.font = '16px Poppins';
@@ -326,16 +302,16 @@
       ctxDownload.fillText(`Monedas: ${totalBilletes.monedas}`, 50, 380);
 
       // Dibujar la tabla de códigos escaneados
-      ctxDownload.fillStyle = '#4a90e2'; 
-      ctxDownload.fillRect(40, 410, 720, 30); 
+      ctxDownload.fillStyle = '#4a90e2'; // Color azul para la tabla
+      ctxDownload.fillRect(40, 410, 720, 30); // Fila de encabezado
 
-      ctxDownload.fillStyle = '#fff'; 
+      ctxDownload.fillStyle = '#fff'; // Color blanco para el texto de encabezado
       ctxDownload.font = 'bold 16px Poppins';
       ctxDownload.fillText('Sucursal', 50, 440);
       ctxDownload.fillText('Fecha', 250, 440);
       ctxDownload.fillText('Total', 500, 440);
 
-      ctxDownload.fillStyle = '#000'; 
+      ctxDownload.fillStyle = '#000'; // Volver a color negro para los datos
       ctxDownload.font = '14px Poppins';
 
       let startY = 480;
@@ -346,15 +322,28 @@
         startY += 40;
       });
 
+      // Obtener la fecha actual en formato DD-MM-YYYY
       const fechaActual = new Date();
       const dia = String(fechaActual.getDate()).padStart(2, '0');
-      const mes = String(fechaActual.getMonth() + 1).padStart(2, '0'); 
+      const mes = String(fechaActual.getMonth() + 1).padStart(2, '0'); // Meses 0 indexados
       const anio = fechaActual.getFullYear();
 
+      // Descargar la imagen con el nombre en formato "TABULADOR - DD-MM-YYYY"
       const link = document.createElement('a');
-      link.download = `MOVIMIENTOS - ${dia}-${mes}-${anio}.png`;
+      link.download = `TABULADOR - ${dia}-${mes}-${anio}.png`;
       link.href = canvasDownload.toDataURL();
       link.click();
+    });
+
+    // Botón para guardar movimiento
+    saveMovementButton.addEventListener('click', function() {
+      alert("Movimiento guardado correctamente.");
+    });
+
+    // Botón para descargar movimientos
+    downloadMovementButton.addEventListener('click', function() {
+      alert("Descargando movimientos...");
+      // Aquí puedes agregar la funcionalidad para descargar los movimientos en el formato que necesites
     });
 
   </script>
