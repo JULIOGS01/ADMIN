@@ -4,10 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Administrador de Sobres</title>
-  
-  <!-- Agregar la fuente Poppins desde Google Fonts -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
-  
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -24,7 +21,7 @@
       margin-bottom: 20px;
       font-size: 24px;
     }
-    label {
+    label, button {
       color: #4a90e2;
       font-weight: 600;
       font-size: 16px;
@@ -35,8 +32,6 @@
       border: none;
       padding: 10px 20px;
       cursor: pointer;
-      font-weight: 600;
-      font-size: 16px;
       border-radius: 4px;
       margin-top: 20px;
     }
@@ -73,16 +68,8 @@
       font-size: 18px;
       font-weight: bold;
     }
-    #scanButton, #downloadDataButton, #saveMovementButton, #downloadMovementButton {
+    #scanButton, #downloadButton {
       display: none;
-    }
-    #bankMovementButton {
-      background-color: #28a745;
-      margin-top: 10px;
-    }
-    #bankMovementForm {
-      display: none;
-      margin-top: 20px;
     }
   </style>
 </head>
@@ -91,41 +78,10 @@
 
   <video id="video" autoplay></video>
   <canvas id="canvas" style="display:none;"></canvas>
-  <canvas id="canvasDownload" style="display:none;"></canvas> <!-- Canvas para la imagen -->
+  <canvas id="canvasDownload" style="display:none;"></canvas>
 
   <button id="scanButton">Escanear otro código</button>
-  <button id="downloadDataButton">Guardar Datos</button>
-  <button id="bankMovementButton">Movimiento Bancario</button>
-  <button id="saveMovementButton">Guardar Movimiento</button>
-  <button id="downloadMovementButton">Descargar Movimientos</button>
-
-  <div id="bankMovementForm">
-    <h2>Movimiento Bancario</h2>
-    <div>
-      <label for="radioAmount1">Radio Móvil Dipsa - Cantidad 1:</label>
-      <input type="number" id="radioAmount1" name="radioAmount1"><br>
-      <label for="radioAmount2">Cantidad 2:</label>
-      <input type="number" id="radioAmount2" name="radioAmount2"><br>
-      <label for="radioAmount3">Cantidad 3:</label>
-      <input type="number" id="radioAmount3" name="radioAmount3"><br>
-      <label for="radioAmount4">Cantidad 4:</label>
-      <input type="number" id="radioAmount4" name="radioAmount4"><br>
-      <label for="radioAmount5">Cantidad 5:</label>
-      <input type="number" id="radioAmount5" name="radioAmount5"><br>
-    </div>
-    <div>
-      <label for="grupoAmount1">Grupo en Telecomunicaciones - Cantidad 1:</label>
-      <input type="number" id="grupoAmount1" name="grupoAmount1"><br>
-      <label for="grupoAmount2">Cantidad 2:</label>
-      <input type="number" id="grupoAmount2" name="grupoAmount2"><br>
-      <label for="grupoAmount3">Cantidad 3:</label>
-      <input type="number" id="grupoAmount3" name="grupoAmount3"><br>
-      <label for="grupoAmount4">Cantidad 4:</label>
-      <input type="number" id="grupoAmount4" name="grupoAmount4"><br>
-      <label for="grupoAmount5">Cantidad 5:</label>
-      <input type="number" id="grupoAmount5" name="grupoAmount5"><br>
-    </div>
-  </div>
+  <button id="downloadButton">Guardar Datos</button>
 
   <table class="tabla-datos" id="tablaResultados" style="display: none;">
     <thead>
@@ -141,7 +97,7 @@
   <p class="total" id="totalAcumulado">Total Acumulado: $0</p>
 
   <div class="denominaciones">
-    <p id="denominacionesTotal">Total por Denominaciones:</p>
+    <p>Total por Denominaciones:</p>
     <p>$1000: <span id="total1000">0</span></p>
     <p>$500: <span id="total500">0</span></p>
     <p>$200: <span id="total200">0</span></p>
@@ -165,25 +121,16 @@
     };
     let escaneoActivo = true;
     const resultadosTabla = [];
-    const movimientos = {
-      radio: [],
-      grupo: []
-    };
 
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const scanButton = document.getElementById('scanButton');
-    const downloadDataButton = document.getElementById('downloadDataButton');
-    const bankMovementButton = document.getElementById('bankMovementButton');
-    const saveMovementButton = document.getElementById('saveMovementButton');
-    const downloadMovementButton = document.getElementById('downloadMovementButton');
-    const bankMovementForm = document.getElementById('bankMovementForm');
+    const downloadButton = document.getElementById('downloadButton');
 
-    // Iniciar la cámara
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
       video.srcObject = stream;
-      video.setAttribute("playsinline", true); // Para iOS
+      video.setAttribute("playsinline", true);
       video.play();
       requestAnimationFrame(tick);
     });
@@ -198,15 +145,12 @@
 
         if (qrCode) {
           procesarQR(qrCode.data);
-          escaneoActivo = false;  // Detener el escaneo hasta que se active de nuevo
-          scanButton.style.display = "block"; // Mostrar botón para escanear otro código
-          downloadDataButton.style.display = "block"; // Mostrar botón para descargar la etiqueta
-          bankMovementButton.style.display = "block"; // Mostrar botón para movimiento bancario
-          saveMovementButton.style.display = "block"; // Mostrar botón para guardar movimiento
-          downloadMovementButton.style.display = "block"; // Mostrar botón para descargar movimientos
+          escaneoActivo = false;
+          scanButton.style.display = "block";
+          downloadButton.style.display = "block";
         }
       }
-      requestAnimationFrame(tick); // Continuar escaneando incluso si no se detecta el QR
+      requestAnimationFrame(tick);
     }
 
     function procesarQR(qrDataText) {
@@ -258,94 +202,40 @@
       }
     }
 
-    // Botón para escanear otro código
     scanButton.addEventListener('click', function() {
-      escaneoActivo = true;  // Reactivar el escaneo
-      scanButton.style.display = "none"; // Ocultar el botón hasta el próximo escaneo
-      downloadDataButton.style.display = "none"; // Ocultar el botón de descarga
-      saveMovementButton.style.display = "none"; // Ocultar el botón de guardar movimiento
-      downloadMovementButton.style.display = "none"; // Ocultar el botón de descargar movimientos
+      escaneoActivo = true;
+      scanButton.style.display = "none";
+      downloadButton.style.display = "none";
       requestAnimationFrame(tick);
     });
 
-    // Botón para descargar la etiqueta como imagen
-    downloadDataButton.addEventListener('click', function() {
+    downloadButton.addEventListener('click', function() {
       const canvasDownload = document.getElementById('canvasDownload');
       const ctxDownload = canvasDownload.getContext('2d');
 
-      // Configurar el tamaño del canvas para la imagen
-      const scale = 3; // Incrementar aún más la resolución
+      const scale = 3;
       const width = 800;
-      const height = 1000 + resultadosTabla.length * 40; // Ajustar altura en función de la cantidad de filas
+      const height = 1000 + resultadosTabla.length * 40;
       canvasDownload.width = width * scale;
       canvasDownload.height = height * scale;
       ctxDownload.scale(scale, scale);
 
-      // Fondo blanco
       ctxDownload.fillStyle = '#fff';
       ctxDownload.fillRect(0, 0, canvasDownload.width, canvasDownload.height);
 
-      // Título
       ctxDownload.fillStyle = '#000';
       ctxDownload.font = 'bold 24px Poppins';
-      ctxDownload.fillText('Etiqueta - Resumen', 250, 40);
+      ctxDownload.fillText('Tabulador Total', 250, 40);
 
-      // Texto de resumen
-      ctxDownload.font = '16px Poppins';
+      ctxDownload.font = 'bold 36px Poppins';
       ctxDownload.fillText(`Total Acumulado: $${totalGeneral.toLocaleString('es-MX')}`, 50, 100);
-      ctxDownload.fillText(`$1000: ${totalBilletes.mil}`, 50, 140);
-      ctxDownload.fillText(`$500: ${totalBilletes.quinientos}`, 50, 180);
-      ctxDownload.fillText(`$200: ${totalBilletes.doscientos}`, 50, 220);
-      ctxDownload.fillText(`$100: ${totalBilletes.cien}`, 50, 260);
-      ctxDownload.fillText(`$50: ${totalBilletes.cincuenta}`, 50, 300);
-      ctxDownload.fillText(`$20: ${totalBilletes.veinte}`, 50, 340);
-      ctxDownload.fillText(`Monedas: ${totalBilletes.monedas}`, 50, 380);
 
-      // Dibujar la tabla de códigos escaneados
-      ctxDownload.fillStyle = '#4a90e2'; // Color azul para la tabla
-      ctxDownload.fillRect(40, 410, 720, 30); // Fila de encabezado
-
-      ctxDownload.fillStyle = '#fff'; // Color blanco para el texto de encabezado
-      ctxDownload.font = 'bold 16px Poppins';
-      ctxDownload.fillText('Sucursal', 50, 440);
-      ctxDownload.fillText('Fecha', 250, 440);
-      ctxDownload.fillText('Total', 500, 440);
-
-      ctxDownload.fillStyle = '#000'; // Volver a color negro para los datos
-      ctxDownload.font = '14px Poppins';
-
-      let startY = 480;
-      resultadosTabla.forEach((resultado, index) => {
-        ctxDownload.fillText(`${resultado.sucursal}`, 50, startY);
-        ctxDownload.fillText(`${resultado.fecha}`, 250, startY);
-        ctxDownload.fillText(`$${resultado.total.toLocaleString('es-MX')}`, 500, startY);
-        startY += 40;
-      });
-
-      // Obtener la fecha actual en formato DD-MM-YYYY
       const fechaActual = new Date();
       const dia = String(fechaActual.getDate()).padStart(2, '0');
-      const mes = String(fechaActual.getMonth() + 1).padStart(2, '0'); // Meses 0 indexados
+      const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
       const anio = fechaActual.getFullYear();
+      ctxDownload.font = 'bold 18px Poppins';
+      ctxDownload.fillText(`Fecha: ${dia}-${mes}-${anio}`, 50, 150);
 
-      // Descargar la imagen con el nombre en formato "TABULADOR - DD-MM-YYYY"
-      const link = document.createElement('a');
-      link.download = `TABULADOR - ${dia}-${mes}-${anio}.png`;
-      link.href = canvasDownload.toDataURL();
-      link.click();
-    });
-
-    // Botón para guardar movimiento
-    saveMovementButton.addEventListener('click', function() {
-      alert("Movimiento guardado correctamente.");
-    });
-
-    // Botón para descargar movimientos
-    downloadMovementButton.addEventListener('click', function() {
-      alert("Descargando movimientos...");
-      // Aquí puedes agregar la funcionalidad para descargar los movimientos en el formato que necesites
-    });
-
-  </script>
-</body>
-</html>
+      ctxDownload.font = '16px Poppins';
+      ctxDownload.fillText(`$1000: ${totalBilletes.mil}`, 50
