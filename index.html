@@ -242,18 +242,29 @@
       // Título
       ctxDownload.fillStyle = '#000';
       ctxDownload.font = 'bold 24px Poppins';
-      ctxDownload.fillText('Etiqueta - Resumen', 250, 40);
+      ctxDownload.fillText('Tabulador Total', 250, 40); // Cambiar título
 
       // Texto de resumen
-      ctxDownload.font = '16px Poppins';
+      ctxDownload.font = 'bold 36px Poppins'; // Hacer más grande el total acumulado
       ctxDownload.fillText(`Total Acumulado: $${totalGeneral.toLocaleString('es-MX')}`, 50, 100);
-      ctxDownload.fillText(`$1000: ${totalBilletes.mil}`, 50, 140);
-      ctxDownload.fillText(`$500: ${totalBilletes.quinientos}`, 50, 180);
-      ctxDownload.fillText(`$200: ${totalBilletes.doscientos}`, 50, 220);
-      ctxDownload.fillText(`$100: ${totalBilletes.cien}`, 50, 260);
-      ctxDownload.fillText(`$50: ${totalBilletes.cincuenta}`, 50, 300);
-      ctxDownload.fillText(`$20: ${totalBilletes.veinte}`, 50, 340);
-      ctxDownload.fillText(`Monedas: ${totalBilletes.monedas}`, 50, 380);
+
+      // Añadir la fecha en negritas
+      const fechaActual = new Date();
+      const dia = String(fechaActual.getDate()).padStart(2, '0');
+      const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
+      const anio = fechaActual.getFullYear();
+      ctxDownload.font = 'bold 18px Poppins';
+      ctxDownload.fillText(`Fecha: ${dia}-${mes}-${anio}`, 50, 150);
+
+      // Total por denominaciones
+      ctxDownload.font = '16px Poppins';
+      ctxDownload.fillText(`$1000: ${totalBilletes.mil}`, 50, 180);
+      ctxDownload.fillText(`$500: ${totalBilletes.quinientos}`, 50, 220);
+      ctxDownload.fillText(`$200: ${totalBilletes.doscientos}`, 50, 260);
+      ctxDownload.fillText(`$100: ${totalBilletes.cien}`, 50, 300);
+      ctxDownload.fillText(`$50: ${totalBilletes.cincuenta}`, 50, 340);
+      ctxDownload.fillText(`$20: ${totalBilletes.veinte}`, 50, 380);
+      ctxDownload.fillText(`Monedas: ${totalBilletes.monedas}`, 50, 420);
 
       // Dibujar la tabla de códigos escaneados
       ctxDownload.fillStyle = '#4a90e2'; // Color azul para la tabla
@@ -265,22 +276,20 @@
       ctxDownload.fillText('Fecha', 340, 470); // Centrando texto
       ctxDownload.fillText('Total', 590, 470); // Centrando texto
 
-      ctxDownload.fillStyle = '#000'; // Volver a color negro para los datos
       ctxDownload.font = '14px Poppins';
 
       let startY = 510;
       resultadosTabla.forEach((resultado, index) => {
+        // Alternar el color de fondo de las filas
+        ctxDownload.fillStyle = (index % 2 === 0) ? '#f0f0f0' : '#fff'; // Gris claro para filas pares
+        ctxDownload.fillRect(40, startY - 20, 720, 40); // Dibujar la fila
+
+        ctxDownload.fillStyle = '#000'; // Volver a color negro para los datos
         ctxDownload.fillText(`${resultado.sucursal}`, 130, startY);
         ctxDownload.fillText(`${resultado.fecha}`, 340, startY);
         ctxDownload.fillText(`$${resultado.total.toLocaleString('es-MX')}`, 590, startY);
         startY += 40;
       });
-
-      // Obtener la fecha actual en formato DD-MM-YYYY
-      const fechaActual = new Date();
-      const dia = String(fechaActual.getDate()).padStart(2, '0');
-      const mes = String(fechaActual.getMonth() + 1).padStart(2, '0'); // Meses 0 indexados
-      const anio = fechaActual.getFullYear();
 
       // Descargar la imagen con el nombre en formato "TABULADOR - DD-MM-YYYY"
       const link = document.createElement('a');
