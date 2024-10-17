@@ -73,7 +73,18 @@
       font-size: 18px;
       font-weight: bold;
     }
-    #scanButton, #downloadButton {
+    #scanButton, #downloadButton, #bankMovementButton {
+      display: inline-block;
+      margin: 10px;
+    }
+    #bankMovementForm {
+      display: none;
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      padding: 15px;
+      background-color: #fff;
+    }
+    .hidden {
       display: none;
     }
   </style>
@@ -87,6 +98,18 @@
 
   <button id="scanButton">Escanear otro código</button>
   <button id="downloadButton">Guardar Datos</button>
+  <button id="bankMovementButton">Movimiento Bancario</button>
+
+  <form id="bankMovementForm">
+    <label for="bankOption">Entidad Bancaria:</label>
+    <select id="bankOption" name="bankOption" required>
+      <option value="RADIO MOVIL DIPSA">RADIO MOVIL DIPSA</option>
+      <option value="GRUPO EN TELECOMUNICACIONES">GRUPO EN TELECOMUNICACIONES</option>
+    </select><br>
+    <label for="depositAmount">Cantidad a depositar:</label>
+    <input type="number" id="depositAmount" name="depositAmount" required><br>
+    <button type="button" id="calculateDepositButton">Calcular depósito</button>
+  </form>
 
   <table class="tabla-datos" id="tablaResultados" style="display: none;">
     <thead>
@@ -126,12 +149,16 @@
     };
     let escaneoActivo = true;
     const resultadosTabla = []; // Guardar los datos de la tabla
+    let depositoDatos = {}; // Guardar los datos del depósito
 
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const scanButton = document.getElementById('scanButton');
     const downloadButton = document.getElementById('downloadButton');
+    const bankMovementButton = document.getElementById('bankMovementButton');
+    const bankMovementForm = document.getElementById('bankMovementForm');
+    const calculateDepositButton = document.getElementById('calculateDepositButton');
 
     // Iniciar la cámara
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
@@ -154,6 +181,7 @@
           escaneoActivo = false;  // Detener el escaneo hasta que se active de nuevo
           scanButton.style.display = "block"; // Mostrar botón para escanear otro código
           downloadButton.style.display = "block"; // Mostrar botón para descargar la etiqueta
+          bankMovementButton.style.display = "block"; // Mostrar botón para movimiento bancario
         }
       }
       requestAnimationFrame(tick); // Continuar escaneando incluso si no se detecta el QR
@@ -214,12 +242,64 @@
       }
     }
 
-    // Botón para escanear otro código
-    scanButton.addEventListener('click', function() {
-      escaneoActivo = true;  // Reactivar el escaneo
-      scanButton.style.display = "none"; // Ocultar el botón hasta el próximo escaneo
-      downloadButton.style.display = "none"; // Ocultar el botón de descarga
-      requestAnimationFrame(tick);
+    // Mostrar el formulario de Movimiento Bancario
+    bankMovementButton.addEventListener('click', function() {
+      bankMovementForm.style.display = 'block';
+    });
+
+    // Calcular el depósito
+    calculateDepositButton.addEventListener('click', function() {
+      const depositAmount = parseInt(document.getElementById('depositAmount').value);
+      const bankOption = document.getElementById('bankOption').value;
+
+      if (depositAmount > totalGeneral) {
+        alert('La cantidad a depositar es mayor al total acumulado.');
+        return;
+      }
+
+      depositoDatos = { entidad: bankOption, cantidad: depositAmount };
+
+      // Calcular la cantidad de billetes a restar
+      let cantidadRestante = depositAmount;
+      let billetesDepositados = { mil: 0, quinientos: 0, doscientos: 0, cien: 0, cincuenta: 0, veinte: 0, monedas: 0 };
+
+      if (cantidadRestante > 0 && totalBilletes.mil > 0) {
+        billetesDepositados.mil = Math.min(Math.floor(cantidadRestante / 1000), totalBilletes.mil);
+        cantidadRestante -= billetesDepositados.mil * 1000;
+        totalBilletes.mil -= billetesDepositados.mil;
+      }
+      if (cantidadRestante > 0 && totalBilletes.quinientos > 0) {
+        billetesDepositados.quinientos = Math.min(Math.floor(cantidadRestante / 500), totalBilletes.quinientos);
+        cantidadRestante -= billetesDepositados.quinientos * 500;
+        totalBilletes.quinientos -= billetesDepositados.quinientos;
+      }
+      if (cantidadRestante > 0 && totalBilletes.doscientos > 0) {
+        billetesDepositados.doscientos = Math.min(Math.floor(cantidadRestante / 200), totalBilletes.doscientos);
+        cantidadRestante -= billetesDepositados.doscientos * 200;
+        totalBilletes.doscientos -= billetesDepositados.doscientos;
+      }
+      if (cantidadRestante > 0 && totalBilletes.cien > 0) {
+        billetesDepositados.cien = Math.min(Math.floor(cantidadRestante / 100), totalBilletes.cien);
+        cantidadRestante -= billetesDepositados.cien * 100;
+        totalBilletes.cien -= billetesDepositados.cien;
+      }
+      if (cantidadRestante > 0 && totalBilletes.cincuenta > 0) {
+        billetesDepositados.cincuenta = Math.min(Math.floor(cantidadRestante / 50), totalBilletes.cincuenta);
+        cantidadRestante -= billetesDepositados.cincuenta * 50;
+        totalBilletes.cincuenta -= billetesDepositados.cincuenta;
+      }
+      if (cantidadRestante > 0 && totalBilletes.veinte > 0) {
+        billetesDepositados.veinte = Math.min(Math.floor(cantidadRestante / 20), totalBilletes.veinte);
+        cantidadRestante -= billetesDepositados.veinte * 20;
+        totalBilletes.veinte -= billetesDepositados.veinte;
+      }
+      if (cantidadRestante > 0 && totalBilletes.monedas > 0) {
+        billetesDepositados.monedas = Math.min(cantidadRestante, totalBilletes.monedas);
+        cantidadRestante -= billetesDepositados.monedas;
+        totalBilletes.monedas -= billetesDepositados.monedas;
+      }
+
+      alert(`Depósito calculado: \nEntidad: ${bankOption}\nCantidad: $${depositAmount}\nBilletes usados:\n$1000: ${billetesDepositados.mil}\n$500: ${billetesDepositados.quinientos}\n$200: ${billetesDepositados.doscientos}\n$100: ${billetesDepositados.cien}\n$50: ${billetesDepositados.cincuenta}\n$20: ${billetesDepositados.veinte}\nMonedas: ${billetesDepositados.monedas}`);
     });
 
     // Botón para descargar la etiqueta como imagen
@@ -266,19 +346,25 @@
       ctxDownload.fillText(`$20: ${totalBilletes.veinte}`, 50, 380);
       ctxDownload.fillText(`Monedas: ${totalBilletes.monedas}`, 50, 420);
 
+      // Agregar información del depósito, si existe
+      if (depositoDatos.cantidad) {
+        ctxDownload.fillText(`Deposito para: ${depositoDatos.entidad}`, 50, 460);
+        ctxDownload.fillText(`Cantidad a depositar: $${depositoDatos.cantidad}`, 50, 500);
+      }
+
       // Dibujar la tabla de códigos escaneados
       ctxDownload.fillStyle = '#4a90e2'; // Color azul para la tabla
-      ctxDownload.fillRect(40, 450, 720, 30); // Fila de encabezado bien posicionada
+      ctxDownload.fillRect(40, 530, 720, 30); // Fila de encabezado bien posicionada
 
       ctxDownload.fillStyle = '#fff'; // Color blanco para el texto de encabezado
       ctxDownload.font = 'bold 16px Poppins';
-      ctxDownload.fillText('Sucursal', 130, 470); // Centrando texto
-      ctxDownload.fillText('Fecha', 340, 470); // Centrando texto
-      ctxDownload.fillText('Total', 590, 470); // Centrando texto
+      ctxDownload.fillText('Sucursal', 130, 550); // Centrando texto
+      ctxDownload.fillText('Fecha', 340, 550); // Centrando texto
+      ctxDownload.fillText('Total', 590, 550); // Centrando texto
 
       ctxDownload.font = '14px Poppins';
 
-      let startY = 510;
+      let startY = 590;
       resultadosTabla.forEach((resultado, index) => {
         // Alternar el color de fondo de las filas
         ctxDownload.fillStyle = (index % 2 === 0) ? '#f0f0f0' : '#fff'; // Gris claro para filas pares
