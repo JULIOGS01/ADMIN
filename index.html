@@ -89,6 +89,8 @@
   <button id="scanButton">Escanear otro código</button>
   <button id="downloadButton">Guardar Datos</button>
 
+  <input type="file" id="fileInput" accept="image/*" multiple>
+
   <table class="tabla-datos" id="tablaResultados" style="display: none;">
     <thead>
       <tr>
@@ -133,6 +135,7 @@
     const ctx = canvas.getContext('2d');
     const scanButton = document.getElementById('scanButton');
     const downloadButton = document.getElementById('downloadButton');
+    const fileInput = document.getElementById('fileInput');
 
     // Iniciar la cámara
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
@@ -164,15 +167,7 @@
       try {
         const qrData = JSON.parse(qrDataText);
 
-        const tbody = document.getElementById('tbodyResultados');
-        const fila = document.createElement('tr');
-
-        fila.innerHTML = `<td>${qrData.sucursal}</td><td>${qrData.fecha}</td><td>$${qrData.total.toLocaleString('es-MX')}</td>`;
-        tbody.appendChild(fila);
-
-        resultadosTabla.push({ sucursal: qrData.sucursal, fecha: qrData.fecha, total: qrData.total });
-
-        document.getElementById('tablaResultados').style.display = 'table';
+        agregarFilaTabla(qrData.sucursal, qrData.fecha, qrData.total);
 
         totalGeneral += qrData.total;
         document.getElementById('totalAcumulado').textContent = `Total Acumulado: $${totalGeneral.toLocaleString('es-MX')}`;
@@ -185,12 +180,36 @@
         totalBilletes.veinte += qrData.billetes.veinte;
         totalBilletes.monedas += qrData.billetes.monedas;
 
-        Object.entries(totalBilletes).forEach(([key, value]) => {
-          document.getElementById(`total${key.charAt(0).toUpperCase() + key.slice(1)}`).textContent = value;
-        });
+        actualizarDenominaciones();
       } catch (error) {
         alert('Error al procesar el QR. Verifica el formato.');
       }
+    }
+
+    function agregarFilaTabla(sucursal, fecha, total) {
+      resultadosTabla.push({ sucursal, fecha, total });
+      resultadosTabla.sort((a, b) => {
+        if (a.fecha === b.fecha) {
+          return a.sucursal.localeCompare(b.sucursal);
+        }
+        return a.fecha.localeCompare(b.fecha);
+      });
+
+      const tbody = document.getElementById('tbodyResultados');
+      tbody.innerHTML = '';
+      resultadosTabla.forEach(({ sucursal, fecha, total }) => {
+        const fila = document.createElement('tr');
+        fila.innerHTML = `<td>${sucursal}</td><td>${fecha}</td><td>$${total.toLocaleString('es-MX')}</td>`;
+        tbody.appendChild(fila);
+      });
+
+      document.getElementById('tablaResultados').style.display = 'table';
+    }
+
+    function actualizarDenominaciones() {
+      Object.entries(totalBilletes).forEach(([key, value]) => {
+        document.getElementById(`total${key.charAt(0).toUpperCase() + key.slice(1)}`).textContent = value;
+      });
     }
 
     scanButton.addEventListener('click', function() {
@@ -198,6 +217,23 @@
       scanButton.style.display = "none";
       downloadButton.style.display = "none";
       requestAnimationFrame(tick);
+    });
+
+    fileInput.addEventListener('change', async function(event) {
+      const files = Array.from(event.target.files).slice(0, 50);
+      for (const file of files) {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        await img.decode();
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
+        if (qrCode) {
+          procesarQR(qrCode.data);
+        }
+      }
     });
 
     downloadButton.addEventListener('click', function() {
