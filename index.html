@@ -87,7 +87,7 @@
   <canvas id="canvasDownload" style="display:none;"></canvas>
 
   <button id="scanButton">Escanear otro código</button>
-  <button id="downloadButton">Guardar Datos</button>
+  <button id="downloadButton">Descargar Tabulador</button>
 
   <input type="file" id="fileInput" accept="image/*" multiple>
 
@@ -232,8 +232,11 @@
         const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
         if (qrCode) {
           procesarQR(qrCode.data);
+        } else {
+          alert(`No se pudo leer el QR de la imagen: ${file.name}`);
         }
       }
+      downloadButton.style.display = 'block';
     });
 
     downloadButton.addEventListener('click', function() {
