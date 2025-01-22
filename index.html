@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tabulador</title>
+  <title>Administrador de Sobres</title>
   
   <!-- Agregar la fuente Poppins desde Google Fonts -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
@@ -23,7 +23,30 @@
       text-align: center;
       margin-bottom: 20px;
       font-size: 24px;
-      text-transform: uppercase;
+    }
+    label {
+      color: #4a90e2;
+      font-weight: 600;
+      font-size: 16px;
+    }
+    button {
+      background-color: #4a90e2;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      border-radius: 4px;
+      margin-top: 20px;
+    }
+    button:hover {
+      background-color: #357abd;
+    }
+    #video {
+      width: 100%;
+      height: auto;
+      margin-bottom: 20px;
     }
     .tabla-datos {
       width: 100%;
@@ -48,33 +71,38 @@
     .denominaciones {
       margin-top: 20px;
       font-size: 18px;
+      font-weight: bold;
     }
-    .denominaciones p {
-      margin: 5px 0;
+    #scanButton, #downloadButton {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <h1>Tabulador</h1>
+  <h1>Escanear Códigos QR - Administrador</h1>
 
-  <table class="tabla-datos">
+  <video id="video" autoplay></video>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <canvas id="canvasDownload" style="display:none;"></canvas> <!-- Canvas para la imagen -->
+
+  <button id="scanButton">Escanear otro código</button>
+  <button id="downloadButton">Guardar Datos</button>
+
+  <table class="tabla-datos" id="tablaResultados" style="display: none;">
     <thead>
       <tr>
         <th>Sucursal</th>
-        <th>Responsable</th>
         <th>Fecha</th>
         <th>Total</th>
       </tr>
     </thead>
-    <tbody id="tbodyResultados">
-      <!-- Datos dinámicos se agregan aquí -->
-    </tbody>
+    <tbody id="tbodyResultados"></tbody>
   </table>
 
   <p class="total" id="totalAcumulado">Total Acumulado: $0</p>
 
   <div class="denominaciones">
-    <p>Total por Denominaciones:</p>
+    <p id="denominacionesTotal">Total por Denominaciones:</p>
     <p>$1000: <span id="total1000">0</span></p>
     <p>$500: <span id="total500">0</span></p>
     <p>$200: <span id="total200">0</span></p>
@@ -96,37 +124,74 @@
       veinte: 0,
       monedas: 0
     };
-    const resultadosTabla = [];
+    let escaneoActivo = true;
+    const resultadosTabla = []; // Guardar los datos de la tabla
 
-    function agregarFilaTabla(sucursal, responsable, fecha, total) {
-      resultadosTabla.push({ sucursal, responsable, fecha, total });
-      resultadosTabla.sort((a, b) => {
-        if (a.fecha === b.fecha) {
-          return a.sucursal.localeCompare(b.sucursal);
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const scanButton = document.getElementById('scanButton');
+    const downloadButton = document.getElementById('downloadButton');
+
+    // Iniciar la cámara
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
+      video.srcObject = stream;
+      video.setAttribute("playsinline", true); // Para iOS
+      video.play();
+      requestAnimationFrame(tick);
+    });
+
+    function tick() {
+      if (video.readyState === video.HAVE_ENOUGH_DATA && escaneoActivo) {
+        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
+
+        if (qrCode) {
+          procesarQR(qrCode.data);
+          escaneoActivo = false;  // Detener el escaneo hasta que se active de nuevo
+          scanButton.style.display = "block"; // Mostrar botón para escanear otro código
+          downloadButton.style.display = "block"; // Mostrar botón para descargar la etiqueta
         }
-        return a.fecha.localeCompare(b.fecha);
-      });
-
-      const tbody = document.getElementById('tbodyResultados');
-      tbody.innerHTML = '';
-      resultadosTabla.forEach(({ sucursal, responsable, fecha, total }) => {
-        const fila = document.createElement('tr');
-        fila.innerHTML = `<td>${sucursal}</td><td>${responsable}</td><td>${fecha}</td><td>$${total.toLocaleString('es-MX')}</td>`;
-        tbody.appendChild(fila);
-      });
-
-      document.getElementById('totalAcumulado').textContent = `Total Acumulado: $${totalGeneral.toLocaleString('es-MX')}`;
+      }
+      requestAnimationFrame(tick); // Continuar escaneando incluso si no se detecta el QR
     }
 
     function procesarQR(qrDataText) {
       try {
         const qrData = JSON.parse(qrDataText);
 
-        agregarFilaTabla(qrData.sucursal, qrData.responsable, qrData.fecha, qrData.total);
+        // Añadir los datos a la tabla
+        const tbody = document.getElementById('tbodyResultados');
+        const fila = document.createElement('tr');
 
+        const sucursalCell = document.createElement('td');
+        sucursalCell.textContent = qrData.sucursal;
+
+        const fechaCell = document.createElement('td');
+        fechaCell.textContent = qrData.fecha;
+
+        const totalCell = document.createElement('td');
+        totalCell.textContent = `$${qrData.total.toLocaleString('es-MX')}`;
+
+        fila.appendChild(sucursalCell);
+        fila.appendChild(fechaCell);
+        fila.appendChild(totalCell);
+        tbody.appendChild(fila);
+
+        // Guardar los datos en el array de resultados
+        resultadosTabla.push({ sucursal: qrData.sucursal, fecha: qrData.fecha, total: qrData.total });
+
+        // Mostrar la tabla si aún no está visible
+        document.getElementById('tablaResultados').style.display = 'table';
+
+        // Actualizar el total acumulado
         totalGeneral += qrData.total;
         document.getElementById('totalAcumulado').textContent = `Total Acumulado: $${totalGeneral.toLocaleString('es-MX')}`;
 
+        // Actualizar las denominaciones acumuladas
         totalBilletes.mil += qrData.billetes.mil;
         totalBilletes.quinientos += qrData.billetes.quinientos;
         totalBilletes.doscientos += qrData.billetes.doscientos;
@@ -135,13 +200,94 @@
         totalBilletes.veinte += qrData.billetes.veinte;
         totalBilletes.monedas += qrData.billetes.monedas;
 
-        Object.entries(totalBilletes).forEach(([key, value]) => {
-          document.getElementById(`total${key.charAt(0).toUpperCase() + key.slice(1)}`).textContent = value;
-        });
+        // Mostrar el total acumulado de cada denominación
+        document.getElementById('total1000').textContent = totalBilletes.mil;
+        document.getElementById('total500').textContent = totalBilletes.quinientos;
+        document.getElementById('total200').textContent = totalBilletes.doscientos;
+        document.getElementById('total100').textContent = totalBilletes.cien;
+        document.getElementById('total50').textContent = totalBilletes.cincuenta;
+        document.getElementById('total20').textContent = totalBilletes.veinte;
+        document.getElementById('totalMonedas').textContent = totalBilletes.monedas;
+
       } catch (error) {
-        alert('Error al procesar el QR. Verifica el formato.');
+        alert('No se pudo procesar el código QR. Asegúrate de que el formato sea correcto.');
       }
     }
+
+    // Botón para escanear otro código
+    scanButton.addEventListener('click', function() {
+      escaneoActivo = true;  // Reactivar el escaneo
+      scanButton.style.display = "none"; // Ocultar el botón hasta el próximo escaneo
+      downloadButton.style.display = "none"; // Ocultar el botón de descarga
+      requestAnimationFrame(tick);
+    });
+
+    // Botón para descargar la etiqueta como imagen
+    downloadButton.addEventListener('click', function() {
+      const canvasDownload = document.getElementById('canvasDownload');
+      const ctxDownload = canvasDownload.getContext('2d');
+
+      // Configurar el tamaño del canvas para la imagen
+      const scale = 3; // Incrementar aún más la resolución
+      const width = 800;
+      const height = 1000 + resultadosTabla.length * 40; // Ajustar altura en función de la cantidad de filas
+      canvasDownload.width = width * scale;
+      canvasDownload.height = height * scale;
+      ctxDownload.scale(scale, scale);
+
+      // Fondo blanco
+      ctxDownload.fillStyle = '#fff';
+      ctxDownload.fillRect(0, 0, canvasDownload.width, canvasDownload.height);
+
+      // Título
+      ctxDownload.fillStyle = '#000';
+      ctxDownload.font = 'bold 24px Poppins';
+      ctxDownload.fillText('Etiqueta - Resumen', 250, 40);
+
+      // Texto de resumen
+      ctxDownload.font = '16px Poppins';
+      ctxDownload.fillText(`Total Acumulado: $${totalGeneral.toLocaleString('es-MX')}`, 50, 100);
+      ctxDownload.fillText(`$1000: ${totalBilletes.mil}`, 50, 140);
+      ctxDownload.fillText(`$500: ${totalBilletes.quinientos}`, 50, 180);
+      ctxDownload.fillText(`$200: ${totalBilletes.doscientos}`, 50, 220);
+      ctxDownload.fillText(`$100: ${totalBilletes.cien}`, 50, 260);
+      ctxDownload.fillText(`$50: ${totalBilletes.cincuenta}`, 50, 300);
+      ctxDownload.fillText(`$20: ${totalBilletes.veinte}`, 50, 340);
+      ctxDownload.fillText(`Monedas: ${totalBilletes.monedas}`, 50, 380);
+
+      // Dibujar la tabla de códigos escaneados
+      ctxDownload.fillStyle = '#4a90e2'; // Color azul para la tabla
+      ctxDownload.fillRect(40, 410, 720, 30); // Fila de encabezado
+
+      ctxDownload.fillStyle = '#fff'; // Color blanco para el texto de encabezado
+      ctxDownload.font = 'bold 16px Poppins';
+      ctxDownload.fillText('Sucursal', 50, 440);
+      ctxDownload.fillText('Fecha', 250, 440);
+      ctxDownload.fillText('Total', 500, 440);
+
+      ctxDownload.fillStyle = '#000'; // Volver a color negro para los datos
+      ctxDownload.font = '14px Poppins';
+
+      let startY = 480;
+      resultadosTabla.forEach((resultado, index) => {
+        ctxDownload.fillText(`${resultado.sucursal}`, 50, startY);
+        ctxDownload.fillText(`${resultado.fecha}`, 250, startY);
+        ctxDownload.fillText(`$${resultado.total.toLocaleString('es-MX')}`, 500, startY);
+        startY += 40;
+      });
+
+      // Obtener la fecha actual en formato DD-MM-YYYY
+      const fechaActual = new Date();
+      const dia = String(fechaActual.getDate()).padStart(2, '0');
+      const mes = String(fechaActual.getMonth() + 1).padStart(2, '0'); // Meses 0 indexados
+      const anio = fechaActual.getFullYear();
+
+      // Descargar la imagen con el nombre en formato "TABULADOR - DD-MM-YYYY"
+      const link = document.createElement('a');
+      link.download = `TABULADOR - ${dia}-${mes}-${anio}.png`;
+      link.href = canvasDownload.toDataURL();
+      link.click();
+    });
   </script>
 </body>
 </html>
