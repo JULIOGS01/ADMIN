@@ -81,6 +81,7 @@
 <body>
   <h1>Escanear Códigos QR - Administrador</h1>
 
+  <input type="file" id="fileInput" accept="image/*" multiple>
   <video id="video" autoplay></video>
   <canvas id="canvas" style="display:none;"></canvas>
   <canvas id="canvasDownload" style="display:none;"></canvas> <!-- Canvas para la imagen -->
@@ -132,6 +133,7 @@
     const ctx = canvas.getContext('2d');
     const scanButton = document.getElementById('scanButton');
     const downloadButton = document.getElementById('downloadButton');
+    const fileInput = document.getElementById('fileInput');
 
     // Iniciar la cámara
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
@@ -222,6 +224,27 @@
       requestAnimationFrame(tick);
     });
 
+    // Botón para subir imágenes
+    fileInput.addEventListener('change', async function(event) {
+      const files = Array.from(event.target.files).slice(0, 50);
+      for (const file of files) {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        await img.decode();
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
+        if (qrCode) {
+          procesarQR(qrCode.data);
+        } else {
+          alert(`No se pudo leer el QR de la imagen: ${file.name}`);
+        }
+      }
+      downloadButton.style.display = 'block';
+    });
+
     // Botón para descargar la etiqueta como imagen
     downloadButton.addEventListener('click', function() {
       const canvasDownload = document.getElementById('canvasDownload');
@@ -291,4 +314,3 @@
   </script>
 </body>
 </html>
-
