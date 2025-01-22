@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TABULADOR</title>
+  <title>Tabulador</title>
   
   <!-- Agregar la fuente Poppins desde Google Fonts -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
@@ -25,33 +25,9 @@
       font-size: 24px;
       text-transform: uppercase;
     }
-    label {
-      color: #4a90e2;
-      font-weight: 600;
-      font-size: 16px;
-    }
-    button {
-      background-color: #4a90e2;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 16px;
-      border-radius: 4px;
-      margin-top: 20px;
-    }
-    button:hover {
-      background-color: #357abd;
-    }
-    #video {
-      width: 100%;
-      height: auto;
-      margin-bottom: 20px;
-    }
     .tabla-datos {
       width: 100%;
-      margin-top: 40px;
+      margin-top: 20px;
       border-collapse: collapse;
     }
     .tabla-datos th, .tabla-datos td {
@@ -72,40 +48,33 @@
     .denominaciones {
       margin-top: 20px;
       font-size: 18px;
-      font-weight: bold;
     }
-    #scanButton, #downloadButton {
-      display: none;
+    .denominaciones p {
+      margin: 5px 0;
     }
   </style>
 </head>
 <body>
   <h1>Tabulador</h1>
 
-  <video id="video" autoplay></video>
-  <canvas id="canvas" style="display:none;"></canvas>
-  <canvas id="canvasDownload" style="display:none;"></canvas>
-
-  <button id="scanButton">Escanear otro código</button>
-  <button id="downloadButton">Descargar Tabulador</button>
-
-  <input type="file" id="fileInput" accept="image/*" multiple>
-
-  <table class="tabla-datos" id="tablaResultados" style="display: none;">
+  <table class="tabla-datos">
     <thead>
       <tr>
         <th>Sucursal</th>
+        <th>Responsable</th>
         <th>Fecha</th>
         <th>Total</th>
       </tr>
     </thead>
-    <tbody id="tbodyResultados"></tbody>
+    <tbody id="tbodyResultados">
+      <!-- Datos dinámicos se agregan aquí -->
+    </tbody>
   </table>
 
   <p class="total" id="totalAcumulado">Total Acumulado: $0</p>
 
   <div class="denominaciones">
-    <p id="denominacionesTotal">Total por Denominaciones:</p>
+    <p>Total por Denominaciones:</p>
     <p>$1000: <span id="total1000">0</span></p>
     <p>$500: <span id="total500">0</span></p>
     <p>$200: <span id="total200">0</span></p>
@@ -127,47 +96,33 @@
       veinte: 0,
       monedas: 0
     };
-    let escaneoActivo = true;
     const resultadosTabla = [];
 
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const scanButton = document.getElementById('scanButton');
-    const downloadButton = document.getElementById('downloadButton');
-    const fileInput = document.getElementById('fileInput');
-
-    // Iniciar la cámara
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
-      video.srcObject = stream;
-      video.setAttribute("playsinline", true);
-      video.play();
-      requestAnimationFrame(tick);
-    });
-
-    function tick() {
-      if (video.readyState === video.HAVE_ENOUGH_DATA && escaneoActivo) {
-        canvas.height = video.videoHeight;
-        canvas.width = video.videoWidth;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
-
-        if (qrCode) {
-          procesarQR(qrCode.data);
-          escaneoActivo = false;
-          scanButton.style.display = "block";
-          downloadButton.style.display = "block";
+    function agregarFilaTabla(sucursal, responsable, fecha, total) {
+      resultadosTabla.push({ sucursal, responsable, fecha, total });
+      resultadosTabla.sort((a, b) => {
+        if (a.fecha === b.fecha) {
+          return a.sucursal.localeCompare(b.sucursal);
         }
-      }
-      requestAnimationFrame(tick);
+        return a.fecha.localeCompare(b.fecha);
+      });
+
+      const tbody = document.getElementById('tbodyResultados');
+      tbody.innerHTML = '';
+      resultadosTabla.forEach(({ sucursal, responsable, fecha, total }) => {
+        const fila = document.createElement('tr');
+        fila.innerHTML = `<td>${sucursal}</td><td>${responsable}</td><td>${fecha}</td><td>$${total.toLocaleString('es-MX')}</td>`;
+        tbody.appendChild(fila);
+      });
+
+      document.getElementById('totalAcumulado').textContent = `Total Acumulado: $${totalGeneral.toLocaleString('es-MX')}`;
     }
 
     function procesarQR(qrDataText) {
       try {
         const qrData = JSON.parse(qrDataText);
 
-        agregarFilaTabla(qrData.sucursal, qrData.fecha, qrData.total);
+        agregarFilaTabla(qrData.sucursal, qrData.responsable, qrData.fecha, qrData.total);
 
         totalGeneral += qrData.total;
         document.getElementById('totalAcumulado').textContent = `Total Acumulado: $${totalGeneral.toLocaleString('es-MX')}`;
@@ -180,111 +135,13 @@
         totalBilletes.veinte += qrData.billetes.veinte;
         totalBilletes.monedas += qrData.billetes.monedas;
 
-        actualizarDenominaciones();
+        Object.entries(totalBilletes).forEach(([key, value]) => {
+          document.getElementById(`total${key.charAt(0).toUpperCase() + key.slice(1)}`).textContent = value;
+        });
       } catch (error) {
         alert('Error al procesar el QR. Verifica el formato.');
       }
     }
-
-    function agregarFilaTabla(sucursal, fecha, total) {
-      resultadosTabla.push({ sucursal, fecha, total });
-      resultadosTabla.sort((a, b) => {
-        if (a.fecha === b.fecha) {
-          return a.sucursal.localeCompare(b.sucursal);
-        }
-        return a.fecha.localeCompare(b.fecha);
-      });
-
-      const tbody = document.getElementById('tbodyResultados');
-      tbody.innerHTML = '';
-      resultadosTabla.forEach(({ sucursal, fecha, total }) => {
-        const fila = document.createElement('tr');
-        fila.innerHTML = `<td>${sucursal}</td><td>${fecha}</td><td>$${total.toLocaleString('es-MX')}</td>`;
-        tbody.appendChild(fila);
-      });
-
-      document.getElementById('tablaResultados').style.display = 'table';
-    }
-
-    function actualizarDenominaciones() {
-      Object.entries(totalBilletes).forEach(([key, value]) => {
-        document.getElementById(`total${key.charAt(0).toUpperCase() + key.slice(1)}`).textContent = value;
-      });
-    }
-
-    scanButton.addEventListener('click', function() {
-      escaneoActivo = true;
-      scanButton.style.display = "none";
-      downloadButton.style.display = "none";
-      requestAnimationFrame(tick);
-    });
-
-    fileInput.addEventListener('change', async function(event) {
-      const files = Array.from(event.target.files).slice(0, 50);
-      for (const file of files) {
-        const img = new Image();
-        img.src = URL.createObjectURL(file);
-        await img.decode();
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
-        if (qrCode) {
-          procesarQR(qrCode.data);
-        } else {
-          alert(`No se pudo leer el QR de la imagen: ${file.name}`);
-        }
-      }
-      downloadButton.style.display = 'block';
-    });
-
-    downloadButton.addEventListener('click', function() {
-      const canvasDownload = document.getElementById('canvasDownload');
-      const ctxDownload = canvasDownload.getContext('2d');
-
-      const width = 800;
-      const height = 1000 + resultadosTabla.length * 40;
-      canvasDownload.width = width;
-      canvasDownload.height = height;
-
-      ctxDownload.fillStyle = '#fff';
-      ctxDownload.fillRect(0, 0, canvasDownload.width, canvasDownload.height);
-
-      ctxDownload.fillStyle = '#000';
-      ctxDownload.font = 'bold 24px Poppins';
-      ctxDownload.fillText('TABULADOR', 250, 40);
-
-      ctxDownload.font = '16px Poppins';
-      ctxDownload.fillText(`Total Acumulado: $${totalGeneral.toLocaleString('es-MX')}`, 50, 100);
-
-      Object.entries(totalBilletes).forEach(([key, value], index) => {
-        ctxDownload.fillText(`$${key.toUpperCase()}: ${value}`, 50, 140 + (index * 40));
-      });
-
-      ctxDownload.fillStyle = '#4a90e2';
-      ctxDownload.fillRect(40, 410, 720, 30);
-
-      ctxDownload.fillStyle = '#fff';
-      ctxDownload.font = 'bold 16px Poppins';
-      ctxDownload.fillText('Sucursal', 50, 440);
-      ctxDownload.fillText('Fecha', 250, 440);
-      ctxDownload.fillText('Total', 500, 440);
-
-      ctxDownload.fillStyle = '#000';
-      ctxDownload.font = '14px Poppins';
-
-      resultadosTabla.forEach((resultado, index) => {
-        ctxDownload.fillText(resultado.sucursal, 50, 480 + (index * 40));
-        ctxDownload.fillText(resultado.fecha, 250, 480 + (index * 40));
-        ctxDownload.fillText(`$${resultado.total.toLocaleString('es-MX')}`, 500, 480 + (index * 40));
-      });
-
-      const link = document.createElement('a');
-      link.download = 'TABULADOR.png';
-      link.href = canvasDownload.toDataURL();
-      link.click();
-    });
   </script>
 </body>
 </html>
