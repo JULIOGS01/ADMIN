@@ -184,7 +184,11 @@
         tbody.appendChild(fila);
 
         // Guardar los datos en el array de resultados
-        resultadosTabla.push({ sucursal: qrData.sucursal, fecha: qrData.fecha, total: qrData.total });
+        resultadosTabla.push({ 
+          sucursal: qrData.sucursal, 
+          fecha: qrData.fecha, 
+          total: qrData.total 
+        });
 
         // Mostrar la tabla si aún no está visible
         document.getElementById('tablaResultados').style.display = 'table';
@@ -210,6 +214,40 @@
         document.getElementById('total50').textContent = totalBilletes.cincuenta;
         document.getElementById('total20').textContent = totalBilletes.veinte;
         document.getElementById('totalMonedas').textContent = totalBilletes.monedas;
+
+        // Ordenar el array de resultados:
+        // 1. Por fecha ascendente (la más antigua primero)
+        // 2. Si las fechas son iguales, por sucursal en orden A-Z
+        resultadosTabla.sort((a, b) => {
+          const dateA = new Date(a.fecha);
+          const dateB = new Date(b.fecha);
+
+          if (dateA < dateB) return -1;
+          if (dateA > dateB) return 1;
+
+          return a.sucursal.toLowerCase().localeCompare(b.sucursal.toLowerCase());
+        });
+
+        // Reconstruir la tabla con los datos ordenados
+        tbody.innerHTML = ''; // Limpiar el contenido actual
+        resultadosTabla.forEach((resultado) => {
+          const fila = document.createElement('tr');
+
+          const sucursalCell = document.createElement('td');
+          sucursalCell.textContent = resultado.sucursal;
+
+          const fechaCell = document.createElement('td');
+          fechaCell.textContent = resultado.fecha;
+
+          const totalCell = document.createElement('td');
+          totalCell.textContent = `$${resultado.total.toLocaleString('es-MX')}`;
+
+          fila.appendChild(sucursalCell);
+          fila.appendChild(fechaCell);
+          fila.appendChild(totalCell);
+
+          tbody.appendChild(fila);
+        });
 
       } catch (error) {
         alert('No se pudo procesar el código QR. Asegúrate de que el formato sea correcto.');
@@ -260,7 +298,7 @@
 
       // Fondo blanco
       ctxDownload.fillStyle = '#fff';
-      ctxDownload.fillRect(0, 0, canvasDownload.width, canvasDownload.height);
+      ctxDownload.fillRect(0, 0, width, height);
 
       // Título
       ctxDownload.fillStyle = '#000';
@@ -292,9 +330,9 @@
       ctxDownload.font = '14px Poppins';
 
       let startY = 480;
-      resultadosTabla.forEach((resultado, index) => {
-        ctxDownload.fillText(`${resultado.sucursal}`, 50, startY);
-        ctxDownload.fillText(`${resultado.fecha}`, 250, startY);
+      resultadosTabla.forEach((resultado) => {
+        ctxDownload.fillText(resultado.sucursal, 50, startY);
+        ctxDownload.fillText(resultado.fecha, 250, startY);
         ctxDownload.fillText(`$${resultado.total.toLocaleString('es-MX')}`, 500, startY);
         startY += 40;
       });
@@ -314,3 +352,4 @@
   </script>
 </body>
 </html>
+
