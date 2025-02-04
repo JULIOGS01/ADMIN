@@ -115,6 +115,14 @@
 
   <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
   <script>
+    // Función auxiliar para parsear fechas
+    // Se asume que el formato es "DD/MM/YYYY" o "DD-MM-YYYY"
+    function parseDate(fechaStr) {
+      const parts = fechaStr.split(/[-\/]/);
+      // parts[0] = día, parts[1] = mes, parts[2] = año
+      return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+
     let totalGeneral = 0;
     let totalBilletes = {
       mil: 0,
@@ -165,7 +173,7 @@
       try {
         const qrData = JSON.parse(qrDataText);
 
-        // Añadir los datos a la tabla
+        // Añadir los datos a la tabla (temporalmente)
         const tbody = document.getElementById('tbodyResultados');
         const fila = document.createElement('tr');
 
@@ -219,8 +227,8 @@
         // 1. Por fecha ascendente (la más antigua primero)
         // 2. Si las fechas son iguales, por sucursal en orden A-Z
         resultadosTabla.sort((a, b) => {
-          const dateA = new Date(a.fecha);
-          const dateB = new Date(b.fecha);
+          const dateA = parseDate(a.fecha);
+          const dateB = parseDate(b.fecha);
 
           if (dateA < dateB) return -1;
           if (dateA > dateB) return 1;
@@ -352,4 +360,5 @@
   </script>
 </body>
 </html>
+
 
